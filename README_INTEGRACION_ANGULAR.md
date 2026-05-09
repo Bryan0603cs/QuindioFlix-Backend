@@ -216,3 +216,39 @@ mvn spring-boot:run -Dspring-boot.run.profiles=oracle
 ```bash
 mvn spring-boot:run -Dspring-boot.run.profiles=oracle,seed
 ```
+
+
+## Construcción del frontend Angular para Docker
+
+El servicio `frontend` de `docker-compose.yml` espera que exista una carpeta compilada en:
+
+```text
+frontend/dist
+```
+
+Desde la carpeta del proyecto Angular ejecuta:
+
+```bash
+npm install
+ng build --configuration production
+```
+
+Luego copia el resultado generado en `dist/<nombre-app>` hacia el backend:
+
+```powershell
+Remove-Item -Recurse -Force ..\QuindioFlix-Backend-main\frontend\dist
+New-Item -ItemType Directory ..\QuindioFlix-Backend-main\frontend\dist
+Copy-Item -Recurse .\dist\<nombre-app>\* ..\QuindioFlix-Backend-main\frontend\dist\
+```
+
+Después levanta el stack con frontend:
+
+```bash
+docker compose --profile frontend up -d --build
+```
+
+Si solo se quiere probar el backend, no es necesario compilar Angular:
+
+```bash
+docker compose up -d --build
+```

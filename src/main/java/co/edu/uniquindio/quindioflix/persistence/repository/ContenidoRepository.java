@@ -38,30 +38,4 @@ public interface ContenidoRepository extends JpaRepository<ContenidoEntity, Long
     @Modifying
     @Query(value = "DELETE FROM CONTENIDO_GENERO WHERE ID_CONTENIDO = :contenidoId", nativeQuery = true)
     void deleteGenerosByContenidoId(@Param("contenidoId") Long contenidoId);
-
-    @Modifying
-    @Query(value = """
-            UPDATE CONTENIDO
-            SET POPULARIDAD = (
-                SELECT COUNT(*)
-                FROM REPRODUCCIONES r
-                WHERE r.ID_CONTENIDO = CONTENIDO.ID_CONTENIDO
-                  AND r.PORCENTAJE_AVANCE >= 90
-            )
-            """, nativeQuery = true)
-    int recalcularPopularidad();
-
-    @Modifying
-    @Query(value = """
-            UPDATE CONTENIDO
-            SET POPULARIDAD = (
-                SELECT COUNT(*)
-                FROM REPRODUCCIONES r
-                WHERE r.ID_CONTENIDO = :contenidoId
-                  AND r.PORCENTAJE_AVANCE >= 90
-            )
-            WHERE ID_CONTENIDO = :contenidoId
-            """, nativeQuery = true)
-    int recalcularPopularidadContenido(@Param("contenidoId") Long contenidoId);
-
 }

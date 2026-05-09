@@ -43,6 +43,7 @@ public class CalificacionServiceImpl implements CalificacionService {
         ContenidoEntity contenido = contenidos.findById(command.contenidoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Contenido", command.contenidoId()));
 
+        validarAccesoInfantil(perfil, contenido);
         validarReproduccionPrevia(command.perfilId(), command.contenidoId());
         validarCalificacionDuplicada(command);
 
@@ -96,6 +97,15 @@ public class CalificacionServiceImpl implements CalificacionService {
                 .stream()
                 .map(MapperService::calificacion)
                 .toList();
+    }
+
+    private void validarAccesoInfantil(PerfilEntity perfil, ContenidoEntity contenido) {
+        if (perfil.infantil() && !contenido.getClasificacionEdad().permitidoInfantil()) {
+            throw new BusinessException(
+                    "CHILD_PROFILE_RESTRICTION",
+                    "El perfil infantil solo puede calificar contenido TP, +7 o +13."
+            );
+        }
     }
 
     private void validarReproduccionPrevia(Long perfilId, Long contenidoId) {

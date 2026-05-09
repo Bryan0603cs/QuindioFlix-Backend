@@ -18,10 +18,11 @@ import co.edu.uniquindio.quindioflix.persistence.repository.PerfilRepository;
 import co.edu.uniquindio.quindioflix.persistence.repository.ReproduccionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Slf4j
 @Service
@@ -62,23 +63,20 @@ public class ReproduccionServiceImpl implements ReproduccionService {
                 .build();
 
         ReproduccionEntity guardada = reproducciones.save(reproduccion);
-        contenidos.recalcularPopularidadContenido(contenido.getId());
-        log.info("Reproducción registrada: id={}, perfil={}, contenido={}, avance={}",
-                guardada.getId(), perfil.getId(), contenido.getId(), command.porcentajeAvance());
+        recalcularPopularidadContenido(contenido.getId());
+        log.info("Reproducción registrada: id={}, perfil={}, contenido={}, avance={}", guardada.getId(), perfil.getId(), contenido.getId(), guardada.getPorcentajeAvance());
         return MapperService.reproduccion(guardada);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReproduccionResponse> listarPorPerfil(Long perfilId) {
+    public Page<ReproduccionResponse> listarPorPerfil(Long perfilId, Pageable pageable) {
         if (!perfiles.existsById(perfilId)) {
             throw new ResourceNotFoundException("Perfil", perfilId);
         }
 
-        return reproducciones.findByPerfilIdOrderByFechaHoraInicioDesc(perfilId)
-                .stream()
-                .map(MapperService::reproduccion)
-                .toList();
+        return reproducciones.findByPerfilIdOrderByFechaHoraInicioDesc(perfilId, pageable)
+                .map(MapperService::reproduccion);
     }
 
     @Override
@@ -94,10 +92,16 @@ public class ReproduccionServiceImpl implements ReproduccionService {
             reproduccion.setFechaHoraFin(command.fechaHoraFin());
         }
 
-        contenidos.recalcularPopularidadContenido(reproduccion.getContenido().getId());
-        log.info("Avance de reproducción actualizado: id={}, contenido={}, avance={}",
-                reproduccion.getId(), reproduccion.getContenido().getId(), command.porcentajeAvance());
+        recalcularPopularidadContenido(reproduccion.getContenido().getId());
+        log.info("Avance de reproducción actualizado: id={}, avance={}", reproduccionId, command.porcentajeAvance());
         return MapperService.reproduccion(reproduccion);
+    }
+
+    private void recalcularPopularidadContenido(Long contenidoId) {
+        contenidos.findById(contenidoId).ifPresent(contenido -> {
+            long totalCompletas = reproducciones.countByContenidoIdAndPorcentajeAvanceGreaterThanEqual(contenidoId, 90);
+            contenido.setPopularidad(Math.toIntExact(totalCompletas));
+        });
     }
 
     private void validarAccesoInfantil(PerfilEntity perfil, ContenidoEntity contenido) {

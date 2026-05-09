@@ -6,6 +6,7 @@ import co.edu.uniquindio.quindioflix.business.dto.response.AuthResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.UsuarioResponse;
 import co.edu.uniquindio.quindioflix.business.service.AuthService;
 import co.edu.uniquindio.quindioflix.business.service.UsuarioService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +28,13 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Registrar usuario", description = "Crea una cuenta de cliente con perfil principal y primer pago calculado desde el plan.")
     public UsuarioResponse register(@Valid @RequestBody RegistrarUsuarioCommand command) {
         return usuarioService.registrar(command);
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Iniciar sesión", description = "Autentica al usuario y devuelve el token JWT para consumir endpoints protegidos.")
     public AuthResponse login(@Valid @RequestBody LoginCommand command) {
         return authService.login(command);
     }

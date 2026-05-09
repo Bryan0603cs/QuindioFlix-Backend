@@ -4,13 +4,14 @@ import co.edu.uniquindio.quindioflix.business.dto.command.ActualizarAvanceReprod
 import co.edu.uniquindio.quindioflix.business.dto.command.RegistrarReproduccionCommand;
 import co.edu.uniquindio.quindioflix.business.dto.response.ReproduccionResponse;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ReproduccionService {
 
     ReproduccionResponse registrar(RegistrarReproduccionCommand command);
 
-    List<ReproduccionResponse> listarPorPerfil(Long perfilId);
+    Page<ReproduccionResponse> listarPorPerfil(Long perfilId, Pageable pageable);
 
     ReproduccionResponse actualizarAvance(Long reproduccionId, ActualizarAvanceReproduccionCommand command);
 }

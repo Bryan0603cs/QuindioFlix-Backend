@@ -13,12 +13,15 @@ import co.edu.uniquindio.quindioflix.persistence.repository.ContenidoRepository;
 import co.edu.uniquindio.quindioflix.persistence.repository.FavoritoRepository;
 import co.edu.uniquindio.quindioflix.persistence.repository.PerfilRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FavoritoServiceImpl implements FavoritoService {
@@ -46,21 +49,21 @@ public class FavoritoServiceImpl implements FavoritoService {
                 .fechaAgregado(LocalDateTime.now())
                 .build();
 
-        return favoritos.save(favorito).getId();
+        FavoritoEntity guardado = favoritos.save(favorito);
+        log.info("Favorito agregado: id={}, perfil={}, contenido={}", guardado.getId(), perfil.getId(), contenido.getId());
+        return guardado.getId();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ContenidoResponse> listarPorPerfil(Long perfilId) {
+    public Page<ContenidoResponse> listarPorPerfil(Long perfilId, Pageable pageable) {
         if (!perfiles.existsById(perfilId)) {
             throw new ResourceNotFoundException("Perfil", perfilId);
         }
 
-        return favoritos.findByPerfilIdOrderByFechaAgregadoDesc(perfilId)
-                .stream()
+        return favoritos.findByPerfilIdOrderByFechaAgregadoDesc(perfilId, pageable)
                 .map(FavoritoEntity::getContenido)
-                .map(MapperService::contenido)
-                .toList();
+                .map(MapperService::contenido);
     }
 
     @Override
@@ -73,5 +76,6 @@ public class FavoritoServiceImpl implements FavoritoService {
                 ));
 
         favoritos.delete(favorito);
+        log.info("Favorito eliminado: perfil={}, contenido={}", perfilId, contenidoId);
     }
 }

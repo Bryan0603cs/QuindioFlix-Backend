@@ -5,11 +5,13 @@ import co.edu.uniquindio.quindioflix.business.service.GeneroService;
 import co.edu.uniquindio.quindioflix.persistence.mapper.MapperService;
 import co.edu.uniquindio.quindioflix.persistence.repository.GeneroRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneroServiceImpl implements GeneroService {

@@ -4,6 +4,7 @@ import co.edu.uniquindio.quindioflix.business.dto.command.ActualizarCalificacion
 import co.edu.uniquindio.quindioflix.business.dto.command.CalificarContenidoCommand;
 import co.edu.uniquindio.quindioflix.business.dto.response.CalificacionResponse;
 import co.edu.uniquindio.quindioflix.business.service.CalificacionService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

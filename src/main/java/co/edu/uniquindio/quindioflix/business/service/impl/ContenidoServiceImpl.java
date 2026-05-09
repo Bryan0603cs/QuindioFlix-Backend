@@ -151,14 +151,6 @@ public class ContenidoServiceImpl implements ContenidoService {
 
     @Override
     @Transactional
-    public int actualizarPopularidad() {
-        int actualizados = contenidos.recalcularPopularidad();
-        log.info("Popularidad recalculada para {} contenidos", actualizados);
-        return actualizados;
-    }
-
-    @Override
-    @Transactional
     public ContenidoRelacionadoResponse agregarRelacionado(Long contenidoId, CrearRelacionContenidoCommand command) {
         if (contenidoId.equals(command.contenidoDestinoId())) {
             throw new BusinessException("INVALID_CONTENT_RELATION", "Un contenido no puede relacionarse consigo mismo.");
@@ -184,6 +176,20 @@ public class ContenidoServiceImpl implements ContenidoService {
         ContenidoRelacionadoEntity guardada = relaciones.save(relacion);
         log.info("Relación de contenido creada: origen={}, destino={}, tipo={}", contenidoId, destino.getId(), tipoRelacion);
         return MapperService.contenidoRelacionado(guardada);
+    }
+
+
+
+    @Override
+    @Transactional
+    public int actualizarPopularidad() {
+        List<ContenidoEntity> catalogo = contenidos.findAll();
+        for (ContenidoEntity contenido : catalogo) {
+            long totalCompletas = reproducciones.countByContenidoIdAndPorcentajeAvanceGreaterThanEqual(contenido.getId(), 90);
+            contenido.setPopularidad(Math.toIntExact(totalCompletas));
+        }
+        log.info("Popularidad actualizada para {} contenidos", catalogo.size());
+        return catalogo.size();
     }
 
     private CategoriaEntity buscarCategoria(Long categoriaId) {

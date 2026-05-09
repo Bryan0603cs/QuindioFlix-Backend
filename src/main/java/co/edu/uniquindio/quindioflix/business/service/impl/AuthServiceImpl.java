@@ -9,6 +9,7 @@ import co.edu.uniquindio.quindioflix.persistence.entity.UsuarioEntity;
 import co.edu.uniquindio.quindioflix.persistence.mapper.MapperService;
 import co.edu.uniquindio.quindioflix.persistence.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -49,6 +51,7 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
+        log.info("Login exitoso usuarioId={} email={} rol={}", usuario.getId(), usuario.getEmail(), usuario.getRol());
         return new AuthResponse(token, MapperService.usuario(usuario));
     }
 }

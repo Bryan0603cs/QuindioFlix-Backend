@@ -1,6 +1,8 @@
 package co.edu.uniquindio.quindioflix.persistence.repository;
 
 import co.edu.uniquindio.quindioflix.persistence.entity.ReproduccionEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,7 +13,9 @@ import java.util.List;
 
 public interface ReproduccionRepository extends JpaRepository<ReproduccionEntity, Long> {
 
-    List<ReproduccionEntity> findByPerfilIdOrderByFechaHoraInicioDesc(Long perfilId);
+    Page<ReproduccionEntity> findByPerfilIdOrderByFechaHoraInicioDesc(Long perfilId, Pageable pageable);
+
+    long countByContenidoIdAndPorcentajeAvanceGreaterThanEqual(Long contenidoId, Integer porcentajeAvance);
 
     boolean existsByIdAndPerfilUsuarioId(Long reproduccionId, Long usuarioId);
 

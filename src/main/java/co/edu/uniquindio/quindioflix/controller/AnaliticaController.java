@@ -18,12 +18,12 @@ import java.util.List;
 @Tag(name = "Analítica")
 @RequestMapping("/api/reportes/analitica")
 @RequiredArgsConstructor
+@PreAuthorize("@authorizationService.canModerate()")
 public class AnaliticaController {
 
     private final AnaliticaService service;
 
     @GetMapping("/top-contenido-ciudad")
-    @PreAuthorize("@authorizationService.canModerate()")
     public List<AnaliticaService.TopContenido> top(
             @RequestParam String ciudad,
             @RequestParam(defaultValue = "10") int limite
@@ -42,13 +42,11 @@ public class AnaliticaController {
     }
 
     @GetMapping("/calificacion-genero")
-    @PreAuthorize("@authorizationService.canModerate()")
     public List<AnaliticaService.CalificacionGenero> calificacionGenero(@RequestParam String genero) {
         return service.calificacionPromedioPorCategoriaGenero(genero);
     }
 
     @GetMapping("/consumo-usuario")
-    @PreAuthorize("@authorizationService.canModerate()")
     public List<AnaliticaService.ConsumoUsuario> consumoUsuario(
             @RequestParam Long usuarioId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime desde,

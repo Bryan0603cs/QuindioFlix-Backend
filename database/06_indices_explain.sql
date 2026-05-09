@@ -1,24 +1,25 @@
+-- ============================================================================
 -- 06_indices_explain.sql
 -- Núcleo 4: índices y análisis con EXPLAIN PLAN.
--- Ejecutar en SQL Developer con F5. Tomar capturas de BEFORE y AFTER.
+-- El objetivo es evidenciar ANTES y DESPUÉS del índice.
+-- ============================================================================
 
-SET SERVEROUTPUT ON;
-
-PROMPT ================================================================
-PROMPT 1) CONSULTA PESADA SOBRE REPRODUCCIONES - BEFORE INDEX
-PROMPT ================================================================
+-- ============================================================================
+-- 4.1 Índice compuesto para historial de reproducciones por perfil y fecha
+-- ============================================================================
 
 BEGIN
   EXECUTE IMMEDIATE 'DROP INDEX IDX_REP_PERFIL_FECHA';
 EXCEPTION
   WHEN OTHERS THEN
-    IF SQLCODE != -1418 THEN -- ORA-01418: specified index does not exist
-      RAISE;
+    IF SQLCODE != -1418 THEN
+      NULL;
     END IF;
 END;
 /
 
-EXPLAIN PLAN SET STATEMENT_ID = 'REP_BEFORE' FOR
+-- BEFORE: sin índice específico, el plan debería tender a TABLE ACCESS FULL
+EXPLAIN PLAN FOR
 SELECT p.ID_PERFIL, p.NOMBRE, c.TITULO, r.FECHA_HORA_INICIO, r.PORCENTAJE_AVANCE
 FROM REPRODUCCIONES r
 JOIN PERFILES p ON p.ID_PERFIL = r.ID_PERFIL
@@ -28,15 +29,12 @@ WHERE r.ID_PERFIL = 10
                               AND TO_TIMESTAMP('2026-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS')
 ORDER BY r.FECHA_HORA_INICIO DESC;
 
-SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(NULL, 'REP_BEFORE', 'BASIC +PREDICATE'));
-
-PROMPT ================================================================
-PROMPT 2) CREACIÓN DE ÍNDICE Y CONSULTA - AFTER INDEX
-PROMPT ================================================================
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 
 CREATE INDEX IDX_REP_PERFIL_FECHA ON REPRODUCCIONES(ID_PERFIL, FECHA_HORA_INICIO);
 
-EXPLAIN PLAN SET STATEMENT_ID = 'REP_AFTER' FOR
+-- AFTER: con índice, el plan debería usar INDEX RANGE SCAN sobre IDX_REP_PERFIL_FECHA
+EXPLAIN PLAN FOR
 SELECT p.ID_PERFIL, p.NOMBRE, c.TITULO, r.FECHA_HORA_INICIO, r.PORCENTAJE_AVANCE
 FROM REPRODUCCIONES r
 JOIN PERFILES p ON p.ID_PERFIL = r.ID_PERFIL
@@ -46,43 +44,43 @@ WHERE r.ID_PERFIL = 10
                               AND TO_TIMESTAMP('2026-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS')
 ORDER BY r.FECHA_HORA_INICIO DESC;
 
-SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(NULL, 'REP_AFTER', 'BASIC +PREDICATE'));
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 
-PROMPT ================================================================
-PROMPT 3) ÍNDICE DE EMAIL PARA LOGIN / BÚSQUEDA CASE-INSENSITIVE
-PROMPT ================================================================
+-- ============================================================================
+-- 4.2 Índice funcional para autenticación/búsqueda por correo
+-- ============================================================================
 
--- La restricción UK_USUARIO_EMAIL garantiza unicidad del email desde V1.
--- Este índice funcional optimiza consultas LOWER(EMAIL), usadas por autenticación.
 BEGIN
   EXECUTE IMMEDIATE 'DROP INDEX IDX_USUARIOS_EMAIL_LOWER';
 EXCEPTION
   WHEN OTHERS THEN
     IF SQLCODE != -1418 THEN
-      RAISE;
+      NULL;
     END IF;
 END;
 /
 
-EXPLAIN PLAN SET STATEMENT_ID = 'EMAIL_BEFORE' FOR
+-- BEFORE: búsqueda case-insensitive sin índice funcional
+EXPLAIN PLAN FOR
 SELECT *
 FROM USUARIOS
 WHERE LOWER(EMAIL) = LOWER('usuario1@mail.com');
 
-SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(NULL, 'EMAIL_BEFORE', 'BASIC +PREDICATE'));
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 
 CREATE INDEX IDX_USUARIOS_EMAIL_LOWER ON USUARIOS(LOWER(EMAIL));
 
-EXPLAIN PLAN SET STATEMENT_ID = 'EMAIL_AFTER' FOR
+-- AFTER: búsqueda case-insensitive usando IDX_USUARIOS_EMAIL_LOWER
+EXPLAIN PLAN FOR
 SELECT *
 FROM USUARIOS
 WHERE LOWER(EMAIL) = LOWER('usuario1@mail.com');
 
-SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(NULL, 'EMAIL_AFTER', 'BASIC +PREDICATE'));
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 
-PROMPT ================================================================
-PROMPT 4) ÍNDICES ADICIONALES JUSTIFICADOS
-PROMPT ================================================================
+-- ============================================================================
+-- 4.3 Otros índices recomendados
+-- ============================================================================
 
 CREATE INDEX IDX_CONT_CAT_ANIO ON CONTENIDO(ID_CATEGORIA, ANIO_LANZAMIENTO);
 CREATE INDEX IDX_PAGO_USUARIO_FECHA ON PAGOS(ID_USUARIO, FECHA_PAGO);

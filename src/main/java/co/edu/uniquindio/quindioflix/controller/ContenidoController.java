@@ -6,6 +6,7 @@ import co.edu.uniquindio.quindioflix.business.dto.command.CrearRelacionContenido
 import co.edu.uniquindio.quindioflix.business.dto.response.ContenidoRelacionadoResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.ContenidoResponse;
 import co.edu.uniquindio.quindioflix.business.service.ContenidoService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class ContenidoController {
 
     @GetMapping
     @PreAuthorize("@authorizationService.isCurrentUserActive()")
+    @Operation(summary = "Listar catálogo", description = "Lista contenidos con filtros opcionales por título, categoría y género.")
     public Page<ContenidoResponse> listar(
             @RequestParam(required = false) String titulo,
             @RequestParam(required = false) Long categoriaId,
@@ -47,6 +49,7 @@ public class ContenidoController {
 
     @GetMapping("/{id}")
     @PreAuthorize("@authorizationService.isCurrentUserActive()")
+    @Operation(summary = "Obtener contenido", description = "Consulta el detalle de un contenido por identificador.")
     public ContenidoResponse buscar(@PathVariable Long id) {
         return service.buscar(id);
     }
@@ -60,6 +63,7 @@ public class ContenidoController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN','CONTENIDO') and @authorizationService.isCurrentUserActive()")
+    @Operation(summary = "Crear contenido", description = "Permite a ADMIN o CONTENIDO crear elementos del catálogo.")
     public ContenidoResponse crear(@Valid @RequestBody CrearContenidoCommand command) {
         return service.crear(command);
     }

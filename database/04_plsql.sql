@@ -166,12 +166,43 @@ COMPOUND TRIGGER
   AFTER STATEMENT IS
   BEGIN
     FOR i IN 1..g_ids.COUNT LOOP
-      UPDATE USUARIOS
-      SET ESTADO_CUENTA='ACTIVO',
-          FECHA_ULTIMO_PAGO=SYSTIMESTAMP,
-          FECHA_VENCIMIENTO=SYSTIMESTAMP + INTERVAL '30' DAY
-      WHERE ID_USUARIO = g_ids(i);
+      UPDATE USUARIOS SET ESTADO_CUENTA='ACTIVO', FECHA_ULTIMO_PAGO=SYSTIMESTAMP, FECHA_VENCIMIENTO=SYSTIMESTAMP + INTERVAL '30' DAY WHERE ID_USUARIO = g_ids(i);
     END LOOP;
   END AFTER STATEMENT;
+END;
+/
+
+
+-- ============================================================================
+-- PRUEBA_SP_REPORTE_CONSUMO
+-- Bloque anónimo para probar el SYS_REFCURSOR en SQL Developer.
+-- Active DBMS Output antes de ejecutar.
+-- ============================================================================
+DECLARE
+  v_cursor SYS_REFCURSOR;
+  v_perfil VARCHAR2(120);
+  v_categoria VARCHAR2(80);
+  v_reproducciones NUMBER;
+  v_minutos NUMBER;
+BEGIN
+  SP_REPORTE_CONSUMO(
+    p_id_usuario => 1,
+    p_desde => DATE '2024-01-01',
+    p_hasta => DATE '2026-12-31',
+    p_cursor => v_cursor
+  );
+
+  LOOP
+    FETCH v_cursor INTO v_perfil, v_categoria, v_reproducciones, v_minutos;
+    EXIT WHEN v_cursor%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE(
+      'Perfil=' || v_perfil ||
+      ' | Categoria=' || v_categoria ||
+      ' | Reproducciones=' || v_reproducciones ||
+      ' | Minutos=' || v_minutos
+    );
+  END LOOP;
+
+  CLOSE v_cursor;
 END;
 /

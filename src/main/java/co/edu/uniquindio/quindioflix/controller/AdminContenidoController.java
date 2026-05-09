@@ -1,6 +1,7 @@
 package co.edu.uniquindio.quindioflix.controller;
 
 import co.edu.uniquindio.quindioflix.business.service.ContenidoService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,13 +17,15 @@ import java.util.Map;
 @Tag(name = "Administración de contenido")
 @RequestMapping("/api/admin/contenidos")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN') and @authorizationService.isCurrentUserActive()")
 public class AdminContenidoController {
 
     private final ContenidoService contenidoService;
 
     @PostMapping("/actualizar-popularidad")
-    @PreAuthorize("hasRole('ADMIN') and @authorizationService.isCurrentUserActive()")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Recalcula la popularidad del catálogo",
+            description = "Actualiza el campo POPULARIDAD de cada contenido según reproducciones completas con avance mayor o igual al 90%.")
     public Map<String, Integer> actualizarPopularidad() {
         return Map.of("contenidosActualizados", contenidoService.actualizarPopularidad());
     }
