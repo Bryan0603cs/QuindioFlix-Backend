@@ -1,0 +1,60 @@
+-- 05_transacciones_concurrencia.sql
+-- Núcleo 3: transacciones críticas y demostración de concurrencia.
+
+-- A) Registro completo: usuario + perfil + primer pago. Todo o nada.
+DECLARE v_usuario NUMBER;
+BEGIN
+  SAVEPOINT inicio_registro;
+  SP_REGISTRAR_USUARIO('Usuario Transaccional','transaccion@mail.com','3009999999',DATE '1998-01-01','Armenia',
+                       '$2a$10$wuJIc0U/OAbjduBxAsERZOpE.G73uVWHuKDNSSsVVC7GfA0BpJ1km',1,'PSE',14900,v_usuario);
+  COMMIT;
+EXCEPTION WHEN OTHERS THEN ROLLBACK TO inicio_registro; ROLLBACK; RAISE;
+END;
+/
+
+-- B) Renovación mensual con SAVEPOINT por usuario.
+DECLARE
+  CURSOR c_usuarios IS SELECT ID_USUARIO FROM USUARIOS WHERE ESTADO_CUENTA='ACTIVO';
+  v_monto NUMBER;
+BEGIN
+  FOR u IN c_usuarios LOOP
+    SAVEPOINT sp_usuario;
+    BEGIN
+      v_monto := FN_CALCULAR_MONTO(u.ID_USUARIO);
+      INSERT INTO PAGOS(ID_USUARIO, FECHA_PAGO, MONTO, METODO_PAGO, ESTADO_PAGO, REFERENCIA, DESCUENTO_APLICADO)
+      VALUES(u.ID_USUARIO, SYSTIMESTAMP, v_monto, 'PSE', 'EXITOSO', 'RENOVACION-MENSUAL', 0);
+    EXCEPTION WHEN OTHERS THEN
+      ROLLBACK TO sp_usuario;
+      DBMS_OUTPUT.PUT_LINE('Falló usuario '||u.ID_USUARIO||': '||SQLERRM);
+    END;
+  END LOOP;
+  COMMIT;
+END;
+/
+
+-- C) Eliminación de cuenta. Todo o nada.
+DECLARE v_usuario NUMBER := 30;
+BEGIN
+  SAVEPOINT sp_eliminar;
+  DELETE FROM CALIFICACIONES WHERE ID_PERFIL IN (SELECT ID_PERFIL FROM PERFILES WHERE ID_USUARIO = v_usuario);
+  DELETE FROM FAVORITOS WHERE ID_PERFIL IN (SELECT ID_PERFIL FROM PERFILES WHERE ID_USUARIO = v_usuario);
+  DELETE FROM REPRODUCCIONES WHERE ID_PERFIL IN (SELECT ID_PERFIL FROM PERFILES WHERE ID_USUARIO = v_usuario);
+  DELETE FROM REPORTES_CONTENIDO WHERE ID_USUARIO_REPORTA = v_usuario OR ID_MODERADOR = v_usuario;
+  DELETE FROM PERFILES WHERE ID_USUARIO = v_usuario;
+  DELETE FROM PAGOS WHERE ID_USUARIO = v_usuario;
+  DELETE FROM CAMBIOS_PLAN WHERE ID_USUARIO = v_usuario;
+  UPDATE USUARIOS SET ID_REFERIDO_POR = NULL WHERE ID_REFERIDO_POR = v_usuario;
+  DELETE FROM USUARIOS WHERE ID_USUARIO = v_usuario;
+  COMMIT;
+EXCEPTION WHEN OTHERS THEN ROLLBACK TO sp_eliminar; ROLLBACK; RAISE;
+END;
+/
+
+-- Escenario de concurrencia:
+-- SESIÓN A:
+-- SELECT * FROM USUARIOS WHERE ID_USUARIO = 1 FOR UPDATE;
+-- UPDATE USUARIOS SET ID_PLAN = 2 WHERE ID_USUARIO = 1;
+-- Mantener sin COMMIT.
+-- SESIÓN B:
+-- SELECT * FROM USUARIOS WHERE ID_USUARIO = 1 FOR UPDATE WAIT 10;
+-- Oracle bloqueará hasta que sesión A haga COMMIT/ROLLBACK o lanzará timeout.
