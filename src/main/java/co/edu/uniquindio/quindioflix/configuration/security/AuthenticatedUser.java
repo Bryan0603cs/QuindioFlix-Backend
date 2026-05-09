@@ -33,7 +33,7 @@ public record AuthenticatedUser(
 
     @Override
     public boolean isAccountNonExpired() {
-        return estadoCuenta == EstadoCuenta.ACTIVO;
+        return true;
     }
 
     @Override

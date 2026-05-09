@@ -21,6 +21,7 @@ public class GeneroServiceImpl implements GeneroService {
     @Override
     @Transactional(readOnly = true)
     public List<GeneroResponse> listar() {
+        log.debug("Listando géneros");
         return generos.findAllByOrderByNombreAsc()
                 .stream()
                 .map(MapperService::genero)

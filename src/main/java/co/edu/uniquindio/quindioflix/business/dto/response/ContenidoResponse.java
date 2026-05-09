@@ -9,7 +9,7 @@ public record ContenidoResponse(
         Long categoriaId,
         String categoria,
         String titulo,
-        Integer añoLanzamiento,
+        Integer anioLanzamiento,
         Integer duracionMinutos,
         String sinopsis,
         ClasificacionEdad clasificacionEdad,

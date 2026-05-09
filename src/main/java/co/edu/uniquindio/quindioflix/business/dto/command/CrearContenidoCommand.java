@@ -13,7 +13,7 @@ public record CrearContenidoCommand(
         @NotNull
         @Min(1900)
         @Max(value = 2030, message = "El año no puede ser tan lejano en el futuro")
-        Integer añoLanzamiento,
+        Integer anioLanzamiento,
         @NotNull
         @Min(1)
         Integer duracionMinutos,

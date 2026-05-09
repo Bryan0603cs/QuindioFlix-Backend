@@ -4,12 +4,11 @@ import co.edu.uniquindio.quindioflix.business.dto.command.ActualizarAvanceReprod
 import co.edu.uniquindio.quindioflix.business.dto.command.RegistrarReproduccionCommand;
 import co.edu.uniquindio.quindioflix.business.dto.response.ReproduccionResponse;
 import co.edu.uniquindio.quindioflix.business.service.ReproduccionService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,9 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
-@Tag(name = "Reproducciones")
 @RequestMapping("/api/reproducciones")
 @RequiredArgsConstructor
 public class ReproduccionController {
@@ -32,21 +29,22 @@ public class ReproduccionController {
     private final ReproduccionService service;
 
     @GetMapping
+    @Operation(summary = "Listar reproducciones por perfil", description = "Devuelve el historial paginado de reproducciones de un perfil autenticado.")
     @PreAuthorize("@authorizationService.canAccessPerfil(#perfilId)")
-    @Operation(summary = "Listar reproducciones por perfil", description = "Devuelve el historial paginado de reproducciones de un perfil autorizado.")
     public Page<ReproduccionResponse> listarPorPerfil(@RequestParam Long perfilId, Pageable pageable) {
         return service.listarPorPerfil(perfilId, pageable);
     }
 
     @PostMapping
+    @Operation(summary = "Registrar reproducción", description = "Crea una reproducción y valida cuenta activa, perfil infantil, episodio y avance.")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@authorizationService.canAccessPerfil(#command.perfilId())")
-    @Operation(summary = "Registrar reproducción", description = "Registra el consumo de contenido y actualiza la popularidad si corresponde.")
     public ReproduccionResponse registrar(@Valid @RequestBody RegistrarReproduccionCommand command) {
         return service.registrar(command);
     }
 
     @PatchMapping("/{id}")
+    @Operation(summary = "Actualizar avance", description = "Actualiza el porcentaje de avance de una reproducción existente.")
     @PreAuthorize("@authorizationService.canAccessReproduccion(#id)")
     public ReproduccionResponse actualizarAvance(
             @PathVariable Long id,

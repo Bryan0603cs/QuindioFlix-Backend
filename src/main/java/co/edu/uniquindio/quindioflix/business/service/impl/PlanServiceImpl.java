@@ -22,6 +22,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     @Transactional(readOnly = true)
     public List<PlanResponse> activos() {
+        log.debug("Listando planes activos");
         return planes.findByActivoIgnoreCase("S")
                 .stream()
                 .map(MapperService::plan)

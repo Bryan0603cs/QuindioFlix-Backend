@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -49,9 +48,9 @@ public class FavoritoServiceImpl implements FavoritoService {
                 .fechaAgregado(LocalDateTime.now())
                 .build();
 
-        FavoritoEntity guardado = favoritos.save(favorito);
-        log.info("Favorito agregado: id={}, perfil={}, contenido={}", guardado.getId(), perfil.getId(), contenido.getId());
-        return guardado.getId();
+        Long id = favoritos.save(favorito).getId();
+        log.info("Favorito agregado: id={}, perfil={}, contenido={}", id, perfil.getId(), contenido.getId());
+        return id;
     }
 
     @Override
@@ -62,8 +61,7 @@ public class FavoritoServiceImpl implements FavoritoService {
         }
 
         return favoritos.findByPerfilIdOrderByFechaAgregadoDesc(perfilId, pageable)
-                .map(FavoritoEntity::getContenido)
-                .map(MapperService::contenido);
+                .map(favorito -> MapperService.contenido(favorito.getContenido()));
     }
 
     @Override
@@ -76,6 +74,5 @@ public class FavoritoServiceImpl implements FavoritoService {
                 ));
 
         favoritos.delete(favorito);
-        log.info("Favorito eliminado: perfil={}, contenido={}", perfilId, contenidoId);
     }
 }

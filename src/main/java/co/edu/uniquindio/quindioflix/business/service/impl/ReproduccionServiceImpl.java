@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -63,8 +62,8 @@ public class ReproduccionServiceImpl implements ReproduccionService {
                 .build();
 
         ReproduccionEntity guardada = reproducciones.save(reproduccion);
-        recalcularPopularidadContenido(contenido.getId());
-        log.info("Reproducción registrada: id={}, perfil={}, contenido={}, avance={}", guardada.getId(), perfil.getId(), contenido.getId(), guardada.getPorcentajeAvance());
+        contenidos.recalcularPopularidadContenido(contenido.getId());
+        log.info("Reproducción registrada: id={}, perfil={}, contenido={}", guardada.getId(), perfil.getId(), contenido.getId());
         return MapperService.reproduccion(guardada);
     }
 
@@ -92,16 +91,9 @@ public class ReproduccionServiceImpl implements ReproduccionService {
             reproduccion.setFechaHoraFin(command.fechaHoraFin());
         }
 
-        recalcularPopularidadContenido(reproduccion.getContenido().getId());
-        log.info("Avance de reproducción actualizado: id={}, avance={}", reproduccionId, command.porcentajeAvance());
+        contenidos.recalcularPopularidadContenido(reproduccion.getContenido().getId());
+        log.info("Avance de reproducción actualizado: id={}, porcentaje={}", reproduccionId, command.porcentajeAvance());
         return MapperService.reproduccion(reproduccion);
-    }
-
-    private void recalcularPopularidadContenido(Long contenidoId) {
-        contenidos.findById(contenidoId).ifPresent(contenido -> {
-            long totalCompletas = reproducciones.countByContenidoIdAndPorcentajeAvanceGreaterThanEqual(contenidoId, 90);
-            contenido.setPopularidad(Math.toIntExact(totalCompletas));
-        });
     }
 
     private void validarAccesoInfantil(PerfilEntity perfil, ContenidoEntity contenido) {

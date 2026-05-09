@@ -15,8 +15,6 @@ public interface ReproduccionRepository extends JpaRepository<ReproduccionEntity
 
     Page<ReproduccionEntity> findByPerfilIdOrderByFechaHoraInicioDesc(Long perfilId, Pageable pageable);
 
-    long countByContenidoIdAndPorcentajeAvanceGreaterThanEqual(Long contenidoId, Integer porcentajeAvance);
-
     boolean existsByIdAndPerfilUsuarioId(Long reproduccionId, Long usuarioId);
 
     @Query("""
@@ -54,10 +52,6 @@ public interface ReproduccionRepository extends JpaRepository<ReproduccionEntity
             WHERE ID_PERFIL IN (SELECT ID_PERFIL FROM PERFILES WHERE ID_USUARIO = :usuarioId)
             """, nativeQuery = true)
     void deleteByUsuarioId(@Param("usuarioId") Long usuarioId);
-
-    @Modifying
-    @Query("DELETE FROM ReproduccionEntity r WHERE r.perfil.id = :perfilId")
-    void deleteByPerfilId(@Param("perfilId") Long perfilId);
 
     @Modifying
     @Query("DELETE FROM ReproduccionEntity r WHERE r.contenido.id = :contenidoId")

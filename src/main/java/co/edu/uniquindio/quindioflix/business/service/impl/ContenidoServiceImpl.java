@@ -57,9 +57,9 @@ public class ContenidoServiceImpl implements ContenidoService {
     @Override
     @Transactional(readOnly = true)
     public Page<ContenidoResponse> listar(String titulo, Long categoriaId, Long generoId, Pageable pageable) {
-        String tituloPattern = titulo == null || titulo.isBlank() ? null : "%" + titulo.trim() + "%";
+        String tituloNormalizado = titulo == null || titulo.isBlank() ? null : "%" + titulo.trim() + "%";
 
-        return contenidos.buscarCatalogo(tituloPattern, categoriaId, generoId, pageable)
+        return contenidos.buscarCatalogo(tituloNormalizado, categoriaId, generoId, pageable)
                 .map(MapperService::contenido);
     }
 
@@ -81,7 +81,7 @@ public class ContenidoServiceImpl implements ContenidoService {
         ContenidoEntity contenido = ContenidoEntity.builder()
                 .categoria(categoria)
                 .titulo(command.titulo().trim())
-                .anioLanzamiento(command.añoLanzamiento())
+                .anioLanzamiento(command.anioLanzamiento())
                 .duracionMinutos(command.duracionMinutos())
                 .sinopsis(command.sinopsis())
                 .clasificacionEdad(command.clasificacionEdad())
@@ -107,7 +107,7 @@ public class ContenidoServiceImpl implements ContenidoService {
         contenido.setEmpleadoResponsable(buscarEmpleado(command.empleadoResponsableId()));
         contenido.setGeneros(buscarGeneros(command.generoIds()));
         contenido.setTitulo(command.titulo().trim());
-        contenido.setAnioLanzamiento(command.añoLanzamiento());
+        contenido.setAnioLanzamiento(command.anioLanzamiento());
         contenido.setDuracionMinutos(command.duracionMinutos());
         contenido.setSinopsis(command.sinopsis());
         contenido.setClasificacionEdad(command.clasificacionEdad());
@@ -178,20 +178,6 @@ public class ContenidoServiceImpl implements ContenidoService {
         return MapperService.contenidoRelacionado(guardada);
     }
 
-
-
-    @Override
-    @Transactional
-    public int actualizarPopularidad() {
-        List<ContenidoEntity> catalogo = contenidos.findAll();
-        for (ContenidoEntity contenido : catalogo) {
-            long totalCompletas = reproducciones.countByContenidoIdAndPorcentajeAvanceGreaterThanEqual(contenido.getId(), 90);
-            contenido.setPopularidad(Math.toIntExact(totalCompletas));
-        }
-        log.info("Popularidad actualizada para {} contenidos", catalogo.size());
-        return catalogo.size();
-    }
-
     private CategoriaEntity buscarCategoria(Long categoriaId) {
         return categorias.findById(categoriaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría", categoriaId));
@@ -212,4 +198,13 @@ public class ContenidoServiceImpl implements ContenidoService {
 
         return generosEncontrados;
     }
+
+    @Override
+    @Transactional
+    public int actualizarPopularidadCatalogo() {
+        int actualizados = contenidos.recalcularPopularidadCatalogo();
+        log.info("Popularidad del catálogo recalculada. Filas afectadas={}", actualizados);
+        return actualizados;
+    }
+
 }

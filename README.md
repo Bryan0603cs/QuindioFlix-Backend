@@ -120,9 +120,8 @@ Si aparece `The Network Adapter could not establish the connection`, no es un er
 Flyway ejecuta automáticamente:
 
 - `V1__create_schema.sql`: tablas, PK, FK, checks, relaciones N:M y reflexivas.
+- `V2__seed_data.sql`: datos de prueba asimétricos.
 - `V3__indexes.sql`: índices principales para rendimiento.
-
-Los datos de prueba grandes están separados en `src/main/resources/db/seed/V99__seed_data.sql` y se cargan únicamente al activar el perfil `seed`.
 
 ## Scripts del curso incluidos
 
@@ -154,7 +153,7 @@ En la carpeta `database/` quedan los scripts separados para sustentar en SQL Dev
 | POST | `/api/calificaciones` | Calificar contenido, exige reproducción mínima del 50% |
 | POST | `/api/favoritos` | Agregar favorito |
 | DELETE | `/api/favoritos/{perfilId}/{contenidoId}` | Eliminar favorito |
-| POST | `/api/pagos` | Registrar pago del usuario autenticado y activar cuenta si es exitoso |
+| POST | `/api/pagos` | Registrar pago y activar cuenta si es exitoso |
 | GET | `/api/categorias` | Listar categorías para filtros del catálogo |
 | GET | `/api/generos` | Listar géneros para filtros del catálogo |
 | GET | `/api/contenidos` | Listar/buscar catálogo paginado con filtros |
@@ -165,8 +164,7 @@ En la carpeta `database/` quedan los scripts separados para sustentar en SQL Dev
 | POST | `/api/reportes-contenido` | Reportar contenido inapropiado |
 | PATCH | `/api/reportes-contenido/{id}/resolver` | Resolver reporte con moderador/admin |
 | GET | `/api/reportes/analitica/top-contenido-ciudad` | Top contenido por ciudad |
-| GET | `/api/reportes/analitica/ingresos-plan` | Ingresos por plan. Usar `anio` desde Angular; también acepta `año` |
-| GET | `/api/reportes/analitica/calificacion-genero` | Calificación promedio por categoría para un género |
+| GET | `/api/reportes/analitica/ingresos-plan` | Ingresos por plan |
 
 ## Validaciones implementadas en backend
 

@@ -1,7 +1,7 @@
 package co.edu.uniquindio.quindioflix.persistence.repository;
 
-import co.edu.uniquindio.quindioflix.business.model.EstadoReporte;
 import co.edu.uniquindio.quindioflix.persistence.entity.ReporteContenidoEntity;
+import co.edu.uniquindio.quindioflix.business.model.EstadoReporte;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -4,9 +4,9 @@ import co.edu.uniquindio.quindioflix.business.dto.command.ActualizarTemporadaCom
 import co.edu.uniquindio.quindioflix.business.dto.command.CrearTemporadaCommand;
 import co.edu.uniquindio.quindioflix.business.dto.response.TemporadaResponse;
 import co.edu.uniquindio.quindioflix.business.exception.BusinessException;
+import co.edu.uniquindio.quindioflix.business.model.TipoContenido;
 import co.edu.uniquindio.quindioflix.business.exception.ResourceNotFoundException;
 import co.edu.uniquindio.quindioflix.business.service.TemporadaService;
-import co.edu.uniquindio.quindioflix.business.model.TipoContenido;
 import co.edu.uniquindio.quindioflix.persistence.entity.ContenidoEntity;
 import co.edu.uniquindio.quindioflix.persistence.entity.EpisodioEntity;
 import co.edu.uniquindio.quindioflix.persistence.entity.TemporadaEntity;
@@ -68,7 +68,7 @@ public class TemporadaServiceImpl implements TemporadaService {
     public TemporadaResponse crear(Long contenidoId, CrearTemporadaCommand command) {
         ContenidoEntity contenido = contenidos.findById(contenidoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contenido", contenidoId));
-        validarContenidoConTemporadas(contenido);
+        validarTipoContenidoParaTemporada(contenido);
         validarNumeroDuplicado(contenidoId, command.numeroTemporada(), null);
 
         TemporadaEntity temporada = TemporadaEntity.builder()
@@ -112,16 +112,6 @@ public class TemporadaServiceImpl implements TemporadaService {
         log.info("Temporada eliminada: id={}, contenido={}", temporadaId, contenidoId);
     }
 
-    private void validarContenidoConTemporadas(ContenidoEntity contenido) {
-        TipoContenido tipo = contenido.getCategoria().getTipoContenido();
-        if (tipo != TipoContenido.SERIE && tipo != TipoContenido.PODCAST) {
-            throw new BusinessException(
-                    "INVALID_SEASON_CONTENT_TYPE",
-                    "Solo los contenidos de tipo SERIE o PODCAST pueden tener temporadas."
-            );
-        }
-    }
-
     private void validarNumeroDuplicado(Long contenidoId, Integer numeroTemporada, Long temporadaActualId) {
         boolean numeroDuplicado = temporadas.findByContenidoIdOrderByNumeroTemporadaAsc(contenidoId)
                 .stream()
@@ -135,4 +125,15 @@ public class TemporadaServiceImpl implements TemporadaService {
             );
         }
     }
+
+    private void validarTipoContenidoParaTemporada(ContenidoEntity contenido) {
+        TipoContenido tipo = contenido.getCategoria().getTipoContenido();
+        if (tipo != TipoContenido.SERIE && tipo != TipoContenido.PODCAST) {
+            throw new BusinessException(
+                    "INVALID_SEASON_CONTENT_TYPE",
+                    "Solo los contenidos de tipo SERIE o PODCAST pueden tener temporadas."
+            );
+        }
+    }
+
 }

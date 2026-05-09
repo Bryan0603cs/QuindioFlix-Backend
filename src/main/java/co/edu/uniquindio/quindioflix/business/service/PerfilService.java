@@ -12,7 +12,5 @@ public interface PerfilService {
 
     PerfilResponse actualizar(Long perfilId, EditarPerfilCommand command);
 
-    void eliminar(Long perfilId);
-
     List<PerfilResponse> listar(Long usuarioId);
 }

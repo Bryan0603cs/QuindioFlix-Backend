@@ -15,7 +15,7 @@ public interface ContenidoRepository extends JpaRepository<ContenidoEntity, Long
                     SELECT DISTINCT c
                     FROM ContenidoEntity c
                     LEFT JOIN c.generos g
-                    WHERE (:tituloPattern IS NULL OR LOWER(c.titulo) LIKE LOWER(:tituloPattern))
+                    WHERE (:titulo IS NULL OR LOWER(c.titulo) LIKE LOWER(:titulo))
                       AND (:categoriaId IS NULL OR c.categoria.id = :categoriaId)
                       AND (:generoId IS NULL OR g.id = :generoId)
                     """,
@@ -23,13 +23,13 @@ public interface ContenidoRepository extends JpaRepository<ContenidoEntity, Long
                     SELECT COUNT(DISTINCT c)
                     FROM ContenidoEntity c
                     LEFT JOIN c.generos g
-                    WHERE (:tituloPattern IS NULL OR LOWER(c.titulo) LIKE LOWER(:tituloPattern))
+                    WHERE (:titulo IS NULL OR LOWER(c.titulo) LIKE LOWER(:titulo))
                       AND (:categoriaId IS NULL OR c.categoria.id = :categoriaId)
                       AND (:generoId IS NULL OR g.id = :generoId)
                     """
     )
     Page<ContenidoEntity> buscarCatalogo(
-            @Param("tituloPattern") String tituloPattern,
+            @Param("titulo") String titulo,
             @Param("categoriaId") Long categoriaId,
             @Param("generoId") Long generoId,
             Pageable pageable
@@ -38,4 +38,29 @@ public interface ContenidoRepository extends JpaRepository<ContenidoEntity, Long
     @Modifying
     @Query(value = "DELETE FROM CONTENIDO_GENERO WHERE ID_CONTENIDO = :contenidoId", nativeQuery = true)
     void deleteGenerosByContenidoId(@Param("contenidoId") Long contenidoId);
+
+    @Modifying
+    @Query(value = """
+            UPDATE CONTENIDO c
+            SET c.POPULARIDAD = (
+                SELECT COUNT(*)
+                FROM REPRODUCCIONES r
+                WHERE r.ID_CONTENIDO = :contenidoId
+                  AND r.PORCENTAJE_AVANCE >= 90
+            )
+            WHERE c.ID_CONTENIDO = :contenidoId
+            """, nativeQuery = true)
+    void recalcularPopularidadContenido(@Param("contenidoId") Long contenidoId);
+
+    @Modifying
+    @Query(value = """
+            UPDATE CONTENIDO c
+            SET c.POPULARIDAD = (
+                SELECT COUNT(*)
+                FROM REPRODUCCIONES r
+                WHERE r.ID_CONTENIDO = c.ID_CONTENIDO
+                  AND r.PORCENTAJE_AVANCE >= 90
+            )
+            """, nativeQuery = true)
+    int recalcularPopularidadCatalogo();
 }

@@ -55,14 +55,17 @@ public class PagoServiceImpl implements PagoService {
 
         pago = pagos.save(pago);
 
-        usuario.setEstadoCuenta(EstadoCuenta.ACTIVO);
-        usuario.setFechaUltimoPago(fechaPago);
-        usuario.setFechaVencimiento(fechaPago.plusDays(30));
+        if (pago.getEstadoPago() == EstadoPago.EXITOSO) {
+            usuario.setEstadoCuenta(EstadoCuenta.ACTIVO);
+            usuario.setFechaUltimoPago(fechaPago);
+            usuario.setFechaVencimiento(fechaPago.plusDays(30));
+        }
 
         log.info(
-                "Pago exitoso registrado: id={}, usuario={}, monto={}, descuento={}",
+                "Pago registrado: id={}, usuario={}, estado={}, monto={}, descuento={}",
                 pago.getId(),
                 usuario.getId(),
+                pago.getEstadoPago(),
                 pago.getMonto(),
                 pago.getDescuentoAplicado()
         );

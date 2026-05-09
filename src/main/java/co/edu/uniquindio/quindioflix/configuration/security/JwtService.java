@@ -64,11 +64,7 @@ public class JwtService {
     }
 
     public EstadoCuenta estadoCuenta(String token) {
-        Object value = claims(token).get(CLAIM_ESTADO_CUENTA);
-        if (value == null) {
-            return EstadoCuenta.ACTIVO;
-        }
-        return EstadoCuenta.valueOf(String.valueOf(value));
+        return EstadoCuenta.valueOf(String.valueOf(claims(token).get(CLAIM_ESTADO_CUENTA)));
     }
 
     public boolean valid(String token) {

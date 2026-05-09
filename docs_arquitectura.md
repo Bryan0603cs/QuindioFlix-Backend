@@ -61,7 +61,7 @@ El modelo físico incluye relaciones N:M (`CONTENIDO_GENERO`), relaciones reflex
 - `DELETE /api/favoritos/{perfilId}/{contenidoId}`: elimina favorito, protegido por propietario del perfil o ADMIN.
 
 ### Pagos y reportes
-- `GET /api/pagos?usuarioId=X`: historial de pagos, protegido por propietario o ADMIN.
+- `GET /api/pagos?usuarioId=X`: historial de pagos, protegido por propietario o ADMIN. `POST /api/pagos`: pago del usuario autenticado tomado desde JWT.
 - `POST /api/pagos`: registra renovación, calcula monto desde el plan y aplica descuento solo si el pago es EXITOSO.
 - `POST /api/reportes-contenido`: crea reporte, protegido por el usuario reportante.
 - `GET /api/reportes-contenido`: listado para ADMIN o MODERADOR.
@@ -70,7 +70,6 @@ El modelo físico incluye relaciones N:M (`CONTENIDO_GENERO`), relaciones reflex
 ### Analítica
 - `GET /api/reportes/analitica/top-contenido-ciudad`
 - `GET /api/reportes/analitica/ingresos-plan`
-- `GET /api/reportes/analitica/calificacion-genero`
 - `GET /api/reportes/analitica/consumo-usuario?usuarioId=X&desde=2025-01-01T00:00:00&hasta=2025-12-31T23:59:59`
 
 Estos endpoints quedan preparados para consumo desde Angular usando el header:
@@ -126,15 +125,10 @@ Los roles funcionales de la aplicación son:
 
 ### Pagos y referidos
 
-- `GET /api/pagos?usuarioId=X&page=0&size=10`: historial paginado.
+- `GET /api/pagos?usuarioId=X&page=0&size=10`: historial paginado. `POST /api/pagos` toma usuario desde JWT y no recibe estadoPago.
 - `GET /api/usuarios/{id}/pagos?page=0&size=10`: ruta REST consistente para historial de pagos.
 - `POST /api/pagos`: registrar intento de pago.
 - `GET /api/usuarios/{id}/referidos`: usuarios referidos activos.
 - `GET /api/usuarios/{id}/referente`: usuario referente.
 
 El monto del pago se calcula desde el plan. El descuento por referido solo se aplica cuando el pago es `EXITOSO`.
-
-
-## Seed de datos
-
-Las migraciones base no cargan datos masivos en producción. Para cargar datos de demostración en Oracle se activa el perfil `seed`: `mvn spring-boot:run -Dspring-boot.run.profiles=oracle,seed`.

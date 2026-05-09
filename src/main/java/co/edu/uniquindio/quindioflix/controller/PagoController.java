@@ -1,10 +1,10 @@
 package co.edu.uniquindio.quindioflix.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import co.edu.uniquindio.quindioflix.business.dto.command.RegistrarPagoCommand;
 import co.edu.uniquindio.quindioflix.business.dto.response.PagoResponse;
 import co.edu.uniquindio.quindioflix.business.service.PagoService;
 import co.edu.uniquindio.quindioflix.configuration.security.AuthenticatedUser;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@Tag(name = "Pagos")
 @RequestMapping("/api/pagos")
 @RequiredArgsConstructor
 public class PagoController {
@@ -30,15 +29,15 @@ public class PagoController {
 
     @GetMapping
     @PreAuthorize("@authorizationService.canAccessUser(#usuarioId)")
+    @Operation(summary = "Listar pagos por usuario")
     public Page<PagoResponse> listarPorUsuario(@RequestParam Long usuarioId, Pageable pageable) {
         return service.listarPorUsuario(usuarioId, pageable);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@authorizationService.isCurrentUserActive()")
-    public PagoResponse registrar(@AuthenticationPrincipal AuthenticatedUser autenticado,
-                                  @Valid @RequestBody RegistrarPagoCommand command) {
-        return service.registrar(autenticado.usuarioId(), command);
+    @Operation(summary = "Registrar pago")
+    public PagoResponse registrar(@AuthenticationPrincipal AuthenticatedUser user, @Valid @RequestBody RegistrarPagoCommand command) {
+        return service.registrar(user.usuarioId(), command);
     }
 }

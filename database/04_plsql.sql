@@ -173,13 +173,10 @@ END;
 /
 
 
--- ============================================================================
--- PRUEBA_SP_REPORTE_CONSUMO
--- Bloque anónimo para probar el SYS_REFCURSOR en SQL Developer.
--- Active DBMS Output antes de ejecutar.
--- ============================================================================
+-- Bloque de prueba para SP_REPORTE_CONSUMO en SQL Developer.
+-- Activa DBMS Output antes de ejecutar este bloque.
 DECLARE
-  v_cursor SYS_REFCURSOR;
+  PRUEBA_SP_REPORTE_CONSUMO SYS_REFCURSOR;
   v_perfil VARCHAR2(120);
   v_categoria VARCHAR2(80);
   v_reproducciones NUMBER;
@@ -189,20 +186,15 @@ BEGIN
     p_id_usuario => 1,
     p_desde => DATE '2024-01-01',
     p_hasta => DATE '2026-12-31',
-    p_cursor => v_cursor
+    p_cursor => PRUEBA_SP_REPORTE_CONSUMO
   );
 
   LOOP
-    FETCH v_cursor INTO v_perfil, v_categoria, v_reproducciones, v_minutos;
-    EXIT WHEN v_cursor%NOTFOUND;
-    DBMS_OUTPUT.PUT_LINE(
-      'Perfil=' || v_perfil ||
-      ' | Categoria=' || v_categoria ||
-      ' | Reproducciones=' || v_reproducciones ||
-      ' | Minutos=' || v_minutos
-    );
+    FETCH PRUEBA_SP_REPORTE_CONSUMO INTO v_perfil, v_categoria, v_reproducciones, v_minutos;
+    EXIT WHEN PRUEBA_SP_REPORTE_CONSUMO%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE(v_perfil || ' | ' || v_categoria || ' | Reproducciones: ' || v_reproducciones || ' | Minutos: ' || ROUND(v_minutos,2));
   END LOOP;
 
-  CLOSE v_cursor;
+  CLOSE PRUEBA_SP_REPORTE_CONSUMO;
 END;
 /

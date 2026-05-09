@@ -4,7 +4,6 @@ import co.edu.uniquindio.quindioflix.business.dto.response.CalificacionResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.CategoriaResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.ContenidoRelacionadoResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.ContenidoResponse;
-import co.edu.uniquindio.quindioflix.business.dto.response.EmpleadoResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.EpisodioResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.GeneroResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.PagoResponse;
@@ -18,7 +17,6 @@ import co.edu.uniquindio.quindioflix.persistence.entity.CalificacionEntity;
 import co.edu.uniquindio.quindioflix.persistence.entity.CategoriaEntity;
 import co.edu.uniquindio.quindioflix.persistence.entity.ContenidoEntity;
 import co.edu.uniquindio.quindioflix.persistence.entity.ContenidoRelacionadoEntity;
-import co.edu.uniquindio.quindioflix.persistence.entity.EmpleadoEntity;
 import co.edu.uniquindio.quindioflix.persistence.entity.EpisodioEntity;
 import co.edu.uniquindio.quindioflix.persistence.entity.GeneroEntity;
 import co.edu.uniquindio.quindioflix.persistence.entity.PagoEntity;
@@ -196,16 +194,4 @@ public final class MapperService {
                 reporte.getComentarioResolucion()
         );
     }
-
-    public static EmpleadoResponse empleado(EmpleadoEntity empleado) {
-        return new EmpleadoResponse(
-                empleado.getId(),
-                empleado.getNombre(),
-                empleado.getEmail(),
-                empleado.getCargo(),
-                empleado.getDepartamento() == null ? null : empleado.getDepartamento().getId(),
-                empleado.getDepartamento() == null ? null : empleado.getDepartamento().getNombre()
-        );
-    }
 }
-

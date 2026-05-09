@@ -4,18 +4,14 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
-  flyway:
-    enabled: false
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     show-sql: false
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: create-drop
-    properties:
-      hibernate:
-        hbm2ddl:
-          auto: create-drop
+  flyway:
+    enabled: false
   sql:
     init:
       mode: always

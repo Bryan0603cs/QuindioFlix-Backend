@@ -30,11 +30,11 @@ public class AppUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
         if (usuario.getEstadoCuenta() == EstadoCuenta.INACTIVO) {
-            throw new DisabledException("La cuenta está inactiva por falta de pago o vencimiento.");
+            throw new DisabledException("La cuenta está inactiva.");
         }
 
         if (usuario.getEstadoCuenta() == EstadoCuenta.SUSPENDIDO) {
-            throw new LockedException("La cuenta se encuentra suspendida.");
+            throw new LockedException("La cuenta está suspendida.");
         }
 
         return new AuthenticatedUser(

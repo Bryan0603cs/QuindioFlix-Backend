@@ -17,34 +17,30 @@ public class AuthorizationService {
     private final PerfilRepository perfiles;
     private final ReproduccionRepository reproducciones;
     private final CalificacionRepository calificaciones;
+
     public boolean canAccessUser(Long usuarioId) {
         AuthenticatedUser autenticado = currentUser();
-        return isActive(autenticado) && (isAdmin(autenticado) || autenticado.usuarioId().equals(usuarioId));
+        return activo(autenticado) && (isAdmin(autenticado) || autenticado.usuarioId().equals(usuarioId));
     }
 
     public boolean canAccessPerfil(Long perfilId) {
         AuthenticatedUser autenticado = currentUser();
-        return isActive(autenticado) && (isAdmin(autenticado) || perfiles.existsByIdAndUsuarioId(perfilId, autenticado.usuarioId()));
+        return activo(autenticado) && (isAdmin(autenticado) || perfiles.existsByIdAndUsuarioId(perfilId, autenticado.usuarioId()));
     }
 
     public boolean canAccessReproduccion(Long reproduccionId) {
         AuthenticatedUser autenticado = currentUser();
-        return isActive(autenticado) && (isAdmin(autenticado) || reproducciones.existsByIdAndPerfilUsuarioId(reproduccionId, autenticado.usuarioId()));
+        return activo(autenticado) && (isAdmin(autenticado) || reproducciones.existsByIdAndPerfilUsuarioId(reproduccionId, autenticado.usuarioId()));
     }
 
     public boolean canAccessCalificacion(Long calificacionId) {
         AuthenticatedUser autenticado = currentUser();
-        return isActive(autenticado) && (isAdmin(autenticado) || calificaciones.existsByIdAndPerfilUsuarioId(calificacionId, autenticado.usuarioId()));
+        return activo(autenticado) && (isAdmin(autenticado) || calificaciones.existsByIdAndPerfilUsuarioId(calificacionId, autenticado.usuarioId()));
     }
 
     public boolean canModerate() {
         AuthenticatedUser autenticado = currentUser();
-        return isActive(autenticado) && (isAdmin(autenticado) || autenticado.rol() == RolUsuario.MODERADOR);
-    }
-
-    public boolean isCurrentUserActive() {
-        AuthenticatedUser autenticado = currentUser();
-        return isActive(autenticado);
+        return activo(autenticado) && (isAdmin(autenticado) || autenticado.rol() == RolUsuario.MODERADOR);
     }
 
     public Long currentUserId() {
@@ -55,7 +51,7 @@ public class AuthorizationService {
         return user.rol() == RolUsuario.ADMIN;
     }
 
-    private boolean isActive(AuthenticatedUser user) {
+    private boolean activo(AuthenticatedUser user) {
         return user.estadoCuenta() == EstadoCuenta.ACTIVO;
     }
 

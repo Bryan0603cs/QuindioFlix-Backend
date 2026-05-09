@@ -83,7 +83,6 @@ public class ReporteContenidoServiceImpl implements ReporteContenidoService {
             return reportes.findByEstadoOrderByFechaReporteDesc(estado, pageable)
                     .map(MapperService::reporte);
         }
-
         return reportes.findAllByOrderByFechaReporteDesc(pageable)
                 .map(MapperService::reporte);
     }

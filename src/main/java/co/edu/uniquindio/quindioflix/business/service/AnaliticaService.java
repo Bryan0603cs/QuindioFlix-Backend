@@ -15,14 +15,14 @@ public interface AnaliticaService {
     record ConsumoUsuario(String perfil, String categoria, Long reproducciones, Long minutos) {
     }
 
-    record CalificacionGenero(String categoria, BigDecimal promedio, Long totalCalificaciones) {
+    record CalificacionCategoria(String categoria, BigDecimal promedio, Long totalCalificaciones) {
     }
 
     List<TopContenido> topCiudad(String ciudad, int limite);
 
-    List<IngresoPlan> ingresos(int mes, int año);
+    List<IngresoPlan> ingresos(int mes, int anio);
 
     List<ConsumoUsuario> consumoUsuario(Long usuarioId, LocalDateTime desde, LocalDateTime hasta);
 
-    List<CalificacionGenero> calificacionPromedioPorCategoriaGenero(String genero);
+    List<CalificacionCategoria> calificacionPorGenero(String genero);
 }

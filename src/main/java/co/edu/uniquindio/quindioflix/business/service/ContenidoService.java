@@ -26,5 +26,5 @@ public interface ContenidoService {
 
     ContenidoRelacionadoResponse agregarRelacionado(Long contenidoId, CrearRelacionContenidoCommand command);
 
-    int actualizarPopularidad();
+    int actualizarPopularidadCatalogo();
 }

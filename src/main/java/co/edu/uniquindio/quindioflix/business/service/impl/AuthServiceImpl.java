@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
-        log.info("Login exitoso usuarioId={} email={} rol={}", usuario.getId(), usuario.getEmail(), usuario.getRol());
+        log.info("Login exitoso: usuarioId={}, email={}, rol={}", usuario.getId(), usuario.getEmail(), usuario.getRol());
         return new AuthResponse(token, MapperService.usuario(usuario));
     }
 }

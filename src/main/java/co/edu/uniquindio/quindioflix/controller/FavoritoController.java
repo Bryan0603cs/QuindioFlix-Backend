@@ -4,11 +4,10 @@ import co.edu.uniquindio.quindioflix.business.dto.command.AgregarFavoritoCommand
 import co.edu.uniquindio.quindioflix.business.dto.response.ContenidoResponse;
 import co.edu.uniquindio.quindioflix.business.service.FavoritoService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@Tag(name = "Favoritos")
 @RequestMapping("/api/favoritos")
 @RequiredArgsConstructor
 public class FavoritoController {
@@ -31,13 +29,14 @@ public class FavoritoController {
     private final FavoritoService service;
 
     @GetMapping("/perfil/{perfilId}")
+    @Operation(summary = "Listar favoritos por perfil", description = "Devuelve favoritos paginados de un perfil autorizado.")
     @PreAuthorize("@authorizationService.canAccessPerfil(#perfilId)")
-    @Operation(summary = "Listar favoritos", description = "Devuelve los favoritos paginados de un perfil autorizado.")
     public Page<ContenidoResponse> listarPorPerfil(@PathVariable Long perfilId, Pageable pageable) {
         return service.listarPorPerfil(perfilId, pageable);
     }
 
     @PostMapping
+    @Operation(summary = "Agregar favorito")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@authorizationService.canAccessPerfil(#command.perfilId())")
     public Map<String, Long> agregar(@Valid @RequestBody AgregarFavoritoCommand command) {
@@ -45,6 +44,7 @@ public class FavoritoController {
     }
 
     @DeleteMapping("/{perfilId}/{contenidoId}")
+    @Operation(summary = "Eliminar favorito")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("@authorizationService.canAccessPerfil(#perfilId)")
     public void eliminar(@PathVariable Long perfilId, @PathVariable Long contenidoId) {

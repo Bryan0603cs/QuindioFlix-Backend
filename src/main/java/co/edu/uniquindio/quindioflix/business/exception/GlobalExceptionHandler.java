@@ -7,10 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -67,35 +64,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-
-
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    ResponseEntity<ErrorResponse> handleMissingParameter(
-            MissingServletRequestParameterException exception,
-            HttpServletRequest request
-    ) {
-        return build(
-                "MISSING_REQUEST_PARAMETER",
-                "Falta el parámetro requerido: " + exception.getParameterName(),
-                HttpStatus.BAD_REQUEST,
-                request,
-                List.of(new ErrorResponse.FieldDetail(exception.getParameterName(), "Parámetro requerido no enviado"))
-        );
-    }
-
-    @ExceptionHandler({DisabledException.class, LockedException.class})
-    ResponseEntity<ErrorResponse> handleDisabledAccount(
-            RuntimeException exception,
-            HttpServletRequest request
-    ) {
-        return build(
-                "ACCOUNT_NOT_ACTIVE",
-                "La cuenta no está activa o se encuentra suspendida.",
-                HttpStatus.FORBIDDEN,
-                request,
-                List.of()
-        );
-    }
 
     @ExceptionHandler(AccessDeniedException.class)
     ResponseEntity<ErrorResponse> handleAccessDenied(

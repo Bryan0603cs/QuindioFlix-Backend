@@ -4,8 +4,6 @@ import co.edu.uniquindio.quindioflix.business.dto.command.ActualizarCalificacion
 import co.edu.uniquindio.quindioflix.business.dto.command.CalificarContenidoCommand;
 import co.edu.uniquindio.quindioflix.business.dto.response.CalificacionResponse;
 import co.edu.uniquindio.quindioflix.business.service.CalificacionService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@Tag(name = "Calificaciones")
 @RequestMapping("/api/calificaciones")
 @RequiredArgsConstructor
 public class CalificacionController {
@@ -32,7 +29,6 @@ public class CalificacionController {
     private final CalificacionService service;
 
     @GetMapping
-    @PreAuthorize("@authorizationService.isCurrentUserActive()")
     public List<CalificacionResponse> listarPorContenido(@RequestParam Long contenidoId) {
         return service.listarPorContenido(contenidoId);
     }

@@ -99,15 +99,6 @@ public class CalificacionServiceImpl implements CalificacionService {
                 .toList();
     }
 
-    private void validarAccesoInfantil(PerfilEntity perfil, ContenidoEntity contenido) {
-        if (perfil.infantil() && !contenido.getClasificacionEdad().permitidoInfantil()) {
-            throw new BusinessException(
-                    "CHILD_PROFILE_RESTRICTION",
-                    "El perfil infantil solo puede calificar contenido TP, +7 o +13."
-            );
-        }
-    }
-
     private void validarReproduccionPrevia(Long perfilId, Long contenidoId) {
         boolean puedeCalificar = reproducciones.existeConAvanceMinimo(
                 perfilId,
@@ -128,4 +119,14 @@ public class CalificacionServiceImpl implements CalificacionService {
             throw new BusinessException("DUPLICATED_RATING", "El perfil ya calificó este contenido.");
         }
     }
+
+    private void validarAccesoInfantil(PerfilEntity perfil, ContenidoEntity contenido) {
+        if (perfil.infantil() && !contenido.getClasificacionEdad().permitidoInfantil()) {
+            throw new BusinessException(
+                    "CHILD_PROFILE_RESTRICTION",
+                    "El perfil infantil solo puede calificar contenido TP, +7 o +13."
+            );
+        }
+    }
+
 }

@@ -1,19 +1,15 @@
 package co.edu.uniquindio.quindioflix.controller;
 
-import co.edu.uniquindio.quindioflix.business.dto.command.CambiarEstadoUsuarioCommand;
 import co.edu.uniquindio.quindioflix.business.dto.command.CambiarPlanCommand;
-import co.edu.uniquindio.quindioflix.business.dto.command.CambiarRolUsuarioCommand;
 import co.edu.uniquindio.quindioflix.business.dto.command.CrearPerfilCommand;
 import co.edu.uniquindio.quindioflix.business.dto.response.ContenidoResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.PagoResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.PerfilResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.UsuarioResponse;
-import co.edu.uniquindio.quindioflix.business.model.EstadoCuenta;
-import co.edu.uniquindio.quindioflix.business.model.RolUsuario;
+import co.edu.uniquindio.quindioflix.business.service.PagoService;
 import co.edu.uniquindio.quindioflix.business.service.PerfilService;
 import co.edu.uniquindio.quindioflix.business.service.UsuarioService;
 import co.edu.uniquindio.quindioflix.configuration.security.AuthenticatedUser;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,35 +24,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
-@Tag(name = "Usuarios")
 @RequestMapping("/api/usuarios")
 @RequiredArgsConstructor
 public class UsuarioController {
 
     private final UsuarioService usuarios;
     private final PerfilService perfiles;
-
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MODERADOR') and @authorizationService.isCurrentUserActive()")
-    public Page<UsuarioResponse> listar(
-            @RequestParam(required = false) RolUsuario rol,
-            @RequestParam(required = false) EstadoCuenta estado,
-            @RequestParam(required = false) Long planId,
-            @RequestParam(required = false) String ciudad,
-            Pageable pageable
-    ) {
-        return usuarios.listar(rol, estado, planId, ciudad, pageable);
-    }
+    private final PagoService pagoService;
 
     @GetMapping("/me")
-    @PreAuthorize("@authorizationService.isCurrentUserActive()")
     public UsuarioResponse me(@AuthenticationPrincipal AuthenticatedUser autenticado) {
         return usuarios.buscar(autenticado.usuarioId());
     }
@@ -74,20 +56,6 @@ public class UsuarioController {
             @Valid @RequestBody CambiarPlanCommand command
     ) {
         return usuarios.cambiarPlan(id, command);
-    }
-
-    @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyRole('ADMIN','MODERADOR') and @authorizationService.isCurrentUserActive()")
-    public UsuarioResponse cambiarEstado(@PathVariable Long id,
-                                         @Valid @RequestBody CambiarEstadoUsuarioCommand command) {
-        return usuarios.cambiarEstado(id, command.estadoCuenta());
-    }
-
-    @PatchMapping("/{id}/rol")
-    @PreAuthorize("hasRole('ADMIN') and @authorizationService.isCurrentUserActive()")
-    public UsuarioResponse cambiarRol(@PathVariable Long id,
-                                      @Valid @RequestBody CambiarRolUsuarioCommand command) {
-        return usuarios.cambiarRol(id, command.rol());
     }
 
     @PostMapping("/{id}/perfiles")
@@ -115,7 +83,7 @@ public class UsuarioController {
     @GetMapping("/{id}/pagos")
     @PreAuthorize("@authorizationService.canAccessUser(#id)")
     public Page<PagoResponse> pagos(@PathVariable Long id, Pageable pageable) {
-        return usuarios.pagosDeUsuario(id, pageable);
+        return pagoService.listarPorUsuario(id, pageable);
     }
 
     @GetMapping("/{id}/referidos")

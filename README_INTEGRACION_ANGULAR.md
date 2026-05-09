@@ -60,7 +60,6 @@ Password123
 |---|---|---|
 | POST | `/api/usuarios/{id}/perfiles` | Crear perfil |
 | PUT | `/api/perfiles/{id}` | Editar nombre/avatar del perfil |
-| DELETE | `/api/perfiles/{id}` | Eliminar perfil, excepto si es el último de la cuenta |
 
 ### Catálogo
 
@@ -93,10 +92,10 @@ Password123
 
 | Método | Ruta | Uso |
 |---|---|---|
-| GET | `/api/reproducciones?perfilId=1` | Historial de reproducción del perfil autenticado |
+| GET | `/api/reproducciones?perfilId=1&page=0&size=20` | Historial paginado de reproducción del perfil autenticado |
 | POST | `/api/reproducciones` | Registrar reproducción |
 | PATCH | `/api/reproducciones/{id}` | Actualizar avance |
-| GET | `/api/favoritos/perfil/{perfilId}` | Favoritos de un perfil |
+| GET | `/api/favoritos/perfil/{perfilId}?page=0&size=20` | Favoritos paginados de un perfil |
 | POST | `/api/favoritos` | Agregar favorito |
 | DELETE | `/api/favoritos/{perfilId}/{contenidoId}` | Quitar favorito |
 | GET | `/api/calificaciones?contenidoId=1` | Calificaciones de un contenido |
@@ -109,19 +108,28 @@ Password123
 | Método | Ruta | Uso |
 |---|---|---|
 | GET | `/api/pagos?usuarioId=1&page=0&size=10` | Historial paginado |
-| POST | `/api/pagos` | Registrar pago del usuario autenticado |
+| POST | `/api/pagos` | Registrar pago exitoso del usuario autenticado |
 
-El backend calcula el monto desde el plan, aplica el descuento por referido internamente y registra el pago como `EXITOSO`. El frontend no debe enviar `usuarioId` ni `estadoPago` en el body.
+El backend toma el usuario desde el JWT, calcula internamente el monto desde el plan, registra el pago como `EXITOSO` y aplica el descuento por referido cuando corresponde. El frontend no envía `usuarioId` ni `estadoPago` en el body.
+
+JSON de pago:
+
+```json
+{
+  "metodoPago": "PSE",
+  "referencia": "PAGO-ANGULAR-001"
+}
+```
 
 ### Reportes y analítica
 
 | Método | Ruta | Uso |
 |---|---|---|
 | POST | `/api/reportes-contenido` | Crear reporte de contenido inapropiado |
-| GET | `/api/reportes-contenido` | Listar reportes, ADMIN o MODERADOR |
+| GET | `/api/reportes-contenido?estado=PENDIENTE&page=0&size=20` | Listar reportes paginados, ADMIN o MODERADOR |
 | PATCH | `/api/reportes-contenido/{id}/resolver` | Resolver reporte |
 | GET | `/api/reportes/analitica/top-contenido-ciudad` | Top por ciudad |
-| GET | `/api/reportes/analitica/ingresos-plan?mes=5&anio=2026` | Ingresos por plan. También acepta `año`, pero se recomienda `anio` en Angular |
+| GET | `/api/reportes/analitica/ingresos-plan` | Ingresos por plan |
 | GET | `/api/reportes/analitica/calificacion-genero` | Calificación por género |
 | GET | `/api/reportes/analitica/consumo-usuario` | Consumo por usuario entre fechas ISO |
 
@@ -162,93 +170,3 @@ http://localhost
 ```
 
 El proxy Nginx redirige `/api/` hacia el contenedor `backend:8080`.
-
-
-## Correcciones V11 importantes para Angular
-
-- Todos los endpoints de `/api/contenidos/**` requieren token y cuenta ACTIVA.
-- En perfil `dev`, Flyway está desactivado y se usa H2 con `data-dev.sql` para pruebas locales.
-- `POST /api/pagos` ya no recibe `usuarioId` ni `estadoPago`; el usuario se toma del JWT y el estado siempre lo define el backend.
-- `POST /api/reportes-contenido` ya no recibe `usuarioReportaId`; se toma del JWT.
-- `PATCH /api/reportes-contenido/{id}/resolver` ya no recibe `moderadorId`; se toma del JWT.
-- Para cargar el selector de empleados en Angular usar `GET /api/empleados?page=0&size=20`.
-- Para levantar frontend con Docker, primero compilar Angular y copiar el resultado en `frontend/dist`.
-
-
-## Administración de usuarios
-
-Cambiar estado de cuenta:
-
-```http
-PATCH /api/usuarios/{id}/estado
-```
-
-```json
-{
-  "estadoCuenta": "SUSPENDIDO"
-}
-```
-
-Cambiar rol:
-
-```http
-PATCH /api/usuarios/{id}/rol
-```
-
-```json
-{
-  "rol": "CONTENIDO"
-}
-```
-
-## Oracle y datos de prueba
-
-Para evitar contaminar producción, el seed grande está separado de las migraciones base.
-
-- Oracle sin seed:
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=oracle
-```
-
-- Oracle con seed de demostración:
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=oracle,seed
-```
-
-
-## Construcción del frontend Angular para Docker
-
-El servicio `frontend` de `docker-compose.yml` espera que exista una carpeta compilada en:
-
-```text
-frontend/dist
-```
-
-Desde la carpeta del proyecto Angular ejecuta:
-
-```bash
-npm install
-ng build --configuration production
-```
-
-Luego copia el resultado generado en `dist/<nombre-app>` hacia el backend:
-
-```powershell
-Remove-Item -Recurse -Force ..\QuindioFlix-Backend-main\frontend\dist
-New-Item -ItemType Directory ..\QuindioFlix-Backend-main\frontend\dist
-Copy-Item -Recurse .\dist\<nombre-app>\* ..\QuindioFlix-Backend-main\frontend\dist\
-```
-
-Después levanta el stack con frontend:
-
-```bash
-docker compose --profile frontend up -d --build
-```
-
-Si solo se quiere probar el backend, no es necesario compilar Angular:
-
-```bash
-docker compose up -d --build
-```

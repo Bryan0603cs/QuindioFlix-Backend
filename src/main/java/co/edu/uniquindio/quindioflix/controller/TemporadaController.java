@@ -4,7 +4,6 @@ import co.edu.uniquindio.quindioflix.business.dto.command.ActualizarTemporadaCom
 import co.edu.uniquindio.quindioflix.business.dto.command.CrearTemporadaCommand;
 import co.edu.uniquindio.quindioflix.business.dto.response.TemporadaResponse;
 import co.edu.uniquindio.quindioflix.business.service.TemporadaService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@Tag(name = "Temporadas")
 @RequestMapping("/api/contenidos/{contenidoId}/temporadas")
 @RequiredArgsConstructor
 public class TemporadaController {
@@ -30,14 +28,13 @@ public class TemporadaController {
     private final TemporadaService service;
 
     @GetMapping
-    @PreAuthorize("@authorizationService.isCurrentUserActive()")
     public List<TemporadaResponse> listarPorContenido(@PathVariable Long contenidoId) {
         return service.listarPorContenido(contenidoId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ADMIN','CONTENIDO') and @authorizationService.isCurrentUserActive()")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTENIDO')")
     public TemporadaResponse crear(
             @PathVariable Long contenidoId,
             @Valid @RequestBody CrearTemporadaCommand command
@@ -46,7 +43,7 @@ public class TemporadaController {
     }
 
     @PutMapping("/{temporadaId}")
-    @PreAuthorize("hasAnyRole('ADMIN','CONTENIDO') and @authorizationService.isCurrentUserActive()")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTENIDO')")
     public TemporadaResponse actualizar(
             @PathVariable Long contenidoId,
             @PathVariable Long temporadaId,
@@ -57,7 +54,7 @@ public class TemporadaController {
 
     @DeleteMapping("/{temporadaId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('ADMIN','CONTENIDO') and @authorizationService.isCurrentUserActive()")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTENIDO')")
     public void eliminar(@PathVariable Long contenidoId, @PathVariable Long temporadaId) {
         service.eliminar(contenidoId, temporadaId);
     }

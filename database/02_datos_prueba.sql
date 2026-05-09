@@ -1,8 +1,5 @@
 -- 02_datos_prueba.sql
--- Datos de prueba académicos para QuindioFlix.
--- Este archivo corresponde al seed completo usado para cumplir los mínimos del proyecto.
-
--- V99__seed_data.sql
+-- Datos de prueba opcionales para perfil seed y script académico database/02_datos_prueba.sql
 -- Datos asimétricos compatibles con Oracle y H2 en modo Oracle.
 -- Password de los usuarios semilla: Password123
 

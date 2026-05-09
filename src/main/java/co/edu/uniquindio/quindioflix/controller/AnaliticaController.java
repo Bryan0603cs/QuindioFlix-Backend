@@ -1,8 +1,7 @@
 package co.edu.uniquindio.quindioflix.controller;
 
-import co.edu.uniquindio.quindioflix.business.exception.BusinessException;
 import co.edu.uniquindio.quindioflix.business.service.AnaliticaService;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,15 +14,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@Tag(name = "Analítica")
 @RequestMapping("/api/reportes/analitica")
 @RequiredArgsConstructor
-@PreAuthorize("@authorizationService.canModerate()")
 public class AnaliticaController {
 
     private final AnaliticaService service;
 
     @GetMapping("/top-contenido-ciudad")
+    @Operation(summary = "Top contenido por ciudad")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERADOR')")
     public List<AnaliticaService.TopContenido> top(
             @RequestParam String ciudad,
             @RequestParam(defaultValue = "10") int limite
@@ -32,21 +31,18 @@ public class AnaliticaController {
     }
 
     @GetMapping("/ingresos-plan")
-    @PreAuthorize("hasRole('ADMIN') and @authorizationService.isCurrentUserActive()")
+    @Operation(summary = "Ingresos por plan")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<AnaliticaService.IngresoPlan> ingresos(
             @RequestParam int mes,
-            @RequestParam(required = false) Integer anio,
-            @RequestParam(name = "año", required = false) Integer año
+            @RequestParam int anio
     ) {
-        return service.ingresos(mes, resolverAnio(anio, año));
-    }
-
-    @GetMapping("/calificacion-genero")
-    public List<AnaliticaService.CalificacionGenero> calificacionGenero(@RequestParam String genero) {
-        return service.calificacionPromedioPorCategoriaGenero(genero);
+        return service.ingresos(mes, anio);
     }
 
     @GetMapping("/consumo-usuario")
+    @Operation(summary = "Consumo por usuario")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERADOR')")
     public List<AnaliticaService.ConsumoUsuario> consumoUsuario(
             @RequestParam Long usuarioId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime desde,
@@ -55,11 +51,13 @@ public class AnaliticaController {
         return service.consumoUsuario(usuarioId, desde, hasta);
     }
 
-    private int resolverAnio(Integer anio, Integer año) {
-        Integer valor = anio != null ? anio : año;
-        if (valor == null) {
-            throw new BusinessException("MISSING_YEAR", "Debe enviar el parámetro anio o año.");
-        }
-        return valor;
+    @GetMapping("/calificacion-genero")
+    @Operation(summary = "Calificación promedio por género", description = "Calcula la calificación promedio por categoría filtrando por género.")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERADOR')")
+    public List<AnaliticaService.CalificacionCategoria> calificacionGenero(
+            @RequestParam String genero
+    ) {
+        return service.calificacionPorGenero(genero);
     }
+
 }

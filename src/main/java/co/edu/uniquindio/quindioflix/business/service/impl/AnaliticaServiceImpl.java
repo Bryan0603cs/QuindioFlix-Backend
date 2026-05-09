@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AnaliticaServiceImpl implements AnaliticaService {
 
     private final ReproduccionRepository reproducciones;
@@ -39,13 +39,13 @@ public class AnaliticaServiceImpl implements AnaliticaService {
                 JOIN PERFILES p ON p.ID_PERFIL = r.ID_PERFIL
                 JOIN USUARIOS u ON u.ID_USUARIO = p.ID_USUARIO
                 JOIN CONTENIDO c ON c.ID_CONTENIDO = r.ID_CONTENIDO
-                WHERE UPPER(u.CIUDAD) = UPPER(?1)
+                WHERE UPPER(u.CIUDAD) = UPPER(:ciudad)
                 GROUP BY c.ID_CONTENIDO, c.TITULO
                 ORDER BY TOTAL DESC
                 """;
 
         Query query = entityManager.createNativeQuery(sql)
-                .setParameter(1, ciudad);
+                .setParameter("ciudad", ciudad);
         query.setMaxResults(Math.max(1, limite));
 
         @SuppressWarnings("unchecked")
@@ -58,23 +58,23 @@ public class AnaliticaServiceImpl implements AnaliticaService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<IngresoPlan> ingresos(int mes, int año) {
+    public List<IngresoPlan> ingresos(int mes, int anio) {
         String sql = """
                 SELECT pl.NOMBRE, COALESCE(SUM(pa.MONTO), 0), COUNT(pa.ID_PAGO)
                 FROM PAGOS pa
                 JOIN USUARIOS u ON u.ID_USUARIO = pa.ID_USUARIO
                 JOIN PLANES pl ON pl.ID_PLAN = u.ID_PLAN
                 WHERE pa.ESTADO_PAGO = 'EXITOSO'
-                  AND EXTRACT(MONTH FROM pa.FECHA_PAGO) = ?1
-                  AND EXTRACT(YEAR FROM pa.FECHA_PAGO) = ?2
+                  AND EXTRACT(MONTH FROM pa.FECHA_PAGO) = :mes
+                  AND EXTRACT(YEAR FROM pa.FECHA_PAGO) = :anio
                 GROUP BY pl.NOMBRE
                 ORDER BY pl.NOMBRE
                 """;
 
         @SuppressWarnings("unchecked")
         List<Object[]> rows = entityManager.createNativeQuery(sql)
-                .setParameter(1, mes)
-                .setParameter(2, año)
+                .setParameter("mes", mes)
+                .setParameter("anio", anio)
                 .getResultList();
 
         return rows.stream()
@@ -101,44 +101,47 @@ public class AnaliticaServiceImpl implements AnaliticaService {
     }
 
 
+
     @Override
     @Transactional(readOnly = true)
-    public List<CalificacionGenero> calificacionPromedioPorCategoriaGenero(String genero) {
+    public List<CalificacionCategoria> calificacionPorGenero(String genero) {
         String sql = """
-                SELECT cat.NOMBRE, ROUND(AVG(cal.ESTRELLAS), 2) AS PROMEDIO, COUNT(cal.ID_CALIFICACION) AS TOTAL
+                SELECT ca.NOMBRE AS CATEGORIA,
+                       ROUND(AVG(cal.ESTRELLAS), 2) AS PROMEDIO,
+                       COUNT(cal.ID_CALIFICACION) AS TOTAL
                 FROM CALIFICACIONES cal
                 JOIN CONTENIDO c ON c.ID_CONTENIDO = cal.ID_CONTENIDO
-                JOIN CATEGORIAS cat ON cat.ID_CATEGORIA = c.ID_CATEGORIA
+                JOIN CATEGORIAS ca ON ca.ID_CATEGORIA = c.ID_CATEGORIA
                 JOIN CONTENIDO_GENERO cg ON cg.ID_CONTENIDO = c.ID_CONTENIDO
                 JOIN GENEROS g ON g.ID_GENERO = cg.ID_GENERO
-                WHERE UPPER(g.NOMBRE) = UPPER(?1)
-                GROUP BY cat.NOMBRE
-                ORDER BY cat.NOMBRE
+                WHERE UPPER(g.NOMBRE) = UPPER(:genero)
+                GROUP BY ca.NOMBRE
+                ORDER BY ca.NOMBRE
                 """;
 
         @SuppressWarnings("unchecked")
         List<Object[]> rows = entityManager.createNativeQuery(sql)
-                .setParameter(1, genero)
+                .setParameter("genero", genero)
                 .getResultList();
 
+        log.info("Reporte de calificación por género generado: genero={}", genero);
         return rows.stream()
-                .map(this::mapCalificacionGenero)
+                .map(this::mapCalificacionCategoria)
                 .toList();
+    }
+
+    private CalificacionCategoria mapCalificacionCategoria(Object[] row) {
+        return new CalificacionCategoria(
+                (String) row[0],
+                toBigDecimal(row[1]),
+                ((Number) row[2]).longValue()
+        );
     }
 
     private TopContenido mapTopContenido(Object[] row) {
         return new TopContenido(
                 ((Number) row[0]).longValue(),
                 (String) row[1],
-                ((Number) row[2]).longValue()
-        );
-    }
-
-
-    private CalificacionGenero mapCalificacionGenero(Object[] row) {
-        return new CalificacionGenero(
-                (String) row[0],
-                toBigDecimal(row[1]),
                 ((Number) row[2]).longValue()
         );
     }
