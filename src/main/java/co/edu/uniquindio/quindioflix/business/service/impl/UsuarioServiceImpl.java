@@ -1,8 +1,11 @@
 package co.edu.uniquindio.quindioflix.business.service.impl;
 
+import co.edu.uniquindio.quindioflix.business.dto.command.CambiarEstadoUsuarioCommand;
 import co.edu.uniquindio.quindioflix.business.dto.command.CambiarPlanCommand;
+import co.edu.uniquindio.quindioflix.business.dto.command.CambiarRolUsuarioCommand;
 import co.edu.uniquindio.quindioflix.business.dto.command.RegistrarUsuarioCommand;
 import co.edu.uniquindio.quindioflix.business.dto.response.ContenidoResponse;
+import co.edu.uniquindio.quindioflix.business.dto.response.PagoResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.UsuarioResponse;
 import co.edu.uniquindio.quindioflix.business.exception.EmailAlreadyExistsException;
 import co.edu.uniquindio.quindioflix.business.exception.MaxProfilesExceededException;
@@ -30,6 +33,8 @@ import co.edu.uniquindio.quindioflix.persistence.repository.ReproduccionReposito
 import co.edu.uniquindio.quindioflix.persistence.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -135,6 +140,48 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarios.findById(id)
                 .map(MapperService::usuario)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UsuarioResponse> listar(RolUsuario rol, EstadoCuenta estado, Long planId, String ciudad, Pageable pageable) {
+        return usuarios.buscarUsuarios(rol, estado, planId, ciudad, pageable)
+                .map(MapperService::usuario);
+    }
+
+    @Override
+    @Transactional
+    public UsuarioResponse cambiarEstado(Long usuarioId, CambiarEstadoUsuarioCommand command) {
+        UsuarioEntity usuario = usuarios.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", usuarioId));
+
+        usuario.setEstadoCuenta(command.estadoCuenta());
+        UsuarioEntity guardado = usuarios.save(usuario);
+        log.warn("Estado de cuenta actualizado: usuario={}, nuevoEstado={}", usuarioId, command.estadoCuenta());
+        return MapperService.usuario(guardado);
+    }
+
+    @Override
+    @Transactional
+    public UsuarioResponse cambiarRol(Long usuarioId, CambiarRolUsuarioCommand command) {
+        UsuarioEntity usuario = usuarios.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", usuarioId));
+
+        usuario.setRol(command.rol());
+        UsuarioEntity guardado = usuarios.save(usuario);
+        log.warn("Rol de usuario actualizado: usuario={}, nuevoRol={}", usuarioId, command.rol());
+        return MapperService.usuario(guardado);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PagoResponse> pagos(Long usuarioId, Pageable pageable) {
+        if (!usuarios.existsById(usuarioId)) {
+            throw new ResourceNotFoundException("Usuario", usuarioId);
+        }
+
+        return pagos.findByUsuarioIdOrderByFechaPagoDesc(usuarioId, pageable)
+                .map(MapperService::pago);
     }
 
     @Override

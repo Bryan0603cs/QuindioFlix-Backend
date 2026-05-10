@@ -71,4 +71,8 @@ public interface ReproduccionRepository extends JpaRepository<ReproduccionEntity
             )
             """, nativeQuery = true)
     void deleteByTemporadaId(@Param("temporadaId") Long temporadaId);
+    @Modifying
+    @Query("DELETE FROM ReproduccionEntity r WHERE r.perfil.id = :perfilId")
+    void deleteByPerfilId(@Param("perfilId") Long perfilId);
+
 }

@@ -31,4 +31,8 @@ public interface FavoritoRepository extends JpaRepository<FavoritoEntity, Long> 
     @Modifying
     @Query("DELETE FROM FavoritoEntity f WHERE f.contenido.id = :contenidoId")
     void deleteByContenidoId(@Param("contenidoId") Long contenidoId);
+    @Modifying
+    @Query("DELETE FROM FavoritoEntity f WHERE f.perfil.id = :perfilId")
+    void deleteByPerfilId(@Param("perfilId") Long perfilId);
+
 }

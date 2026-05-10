@@ -43,6 +43,10 @@ public class AuthorizationService {
         return activo(autenticado) && (isAdmin(autenticado) || autenticado.rol() == RolUsuario.MODERADOR);
     }
 
+    public boolean isCurrentUserActive() {
+        return activo(currentUser());
+    }
+
     public Long currentUserId() {
         return currentUser().usuarioId();
     }

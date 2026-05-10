@@ -1,15 +1,19 @@
 package co.edu.uniquindio.quindioflix.controller;
 
+import co.edu.uniquindio.quindioflix.business.dto.command.CambiarEstadoUsuarioCommand;
 import co.edu.uniquindio.quindioflix.business.dto.command.CambiarPlanCommand;
+import co.edu.uniquindio.quindioflix.business.dto.command.CambiarRolUsuarioCommand;
 import co.edu.uniquindio.quindioflix.business.dto.command.CrearPerfilCommand;
 import co.edu.uniquindio.quindioflix.business.dto.response.ContenidoResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.PagoResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.PerfilResponse;
 import co.edu.uniquindio.quindioflix.business.dto.response.UsuarioResponse;
-import co.edu.uniquindio.quindioflix.business.service.PagoService;
+import co.edu.uniquindio.quindioflix.business.model.EstadoCuenta;
+import co.edu.uniquindio.quindioflix.business.model.RolUsuario;
 import co.edu.uniquindio.quindioflix.business.service.PerfilService;
 import co.edu.uniquindio.quindioflix.business.service.UsuarioService;
 import co.edu.uniquindio.quindioflix.configuration.security.AuthenticatedUser;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,6 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,9 +41,22 @@ public class UsuarioController {
 
     private final UsuarioService usuarios;
     private final PerfilService perfiles;
-    private final PagoService pagoService;
+
+    @GetMapping
+    @Operation(summary = "Listar usuarios", description = "Lista usuarios de forma paginada para panel administrativo con filtros opcionales.")
+    @PreAuthorize("hasAnyRole('ADMIN','MODERADOR')")
+    public Page<UsuarioResponse> listar(
+            @RequestParam(required = false) RolUsuario rol,
+            @RequestParam(required = false) EstadoCuenta estado,
+            @RequestParam(required = false) Long planId,
+            @RequestParam(required = false) String ciudad,
+            Pageable pageable
+    ) {
+        return usuarios.listar(rol, estado, planId, ciudad, pageable);
+    }
 
     @GetMapping("/me")
+    @Operation(summary = "Consultar usuario autenticado")
     public UsuarioResponse me(@AuthenticationPrincipal AuthenticatedUser autenticado) {
         return usuarios.buscar(autenticado.usuarioId());
     }
@@ -47,6 +65,26 @@ public class UsuarioController {
     @PreAuthorize("@authorizationService.canAccessUser(#id)")
     public UsuarioResponse buscar(@PathVariable Long id) {
         return usuarios.buscar(id);
+    }
+
+    @PatchMapping("/{id}/estado")
+    @Operation(summary = "Cambiar estado de cuenta", description = "Permite a ADMIN/MODERADOR activar, suspender o inactivar una cuenta.")
+    @PreAuthorize("hasAnyRole('ADMIN','MODERADOR')")
+    public UsuarioResponse cambiarEstado(
+            @PathVariable Long id,
+            @Valid @RequestBody CambiarEstadoUsuarioCommand command
+    ) {
+        return usuarios.cambiarEstado(id, command);
+    }
+
+    @PatchMapping("/{id}/rol")
+    @Operation(summary = "Cambiar rol de usuario", description = "Permite a ADMIN asignar roles CLIENTE, MODERADOR, CONTENIDO o ADMIN.")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UsuarioResponse cambiarRol(
+            @PathVariable Long id,
+            @Valid @RequestBody CambiarRolUsuarioCommand command
+    ) {
+        return usuarios.cambiarRol(id, command);
     }
 
     @PatchMapping("/{id}/plan")
@@ -83,7 +121,7 @@ public class UsuarioController {
     @GetMapping("/{id}/pagos")
     @PreAuthorize("@authorizationService.canAccessUser(#id)")
     public Page<PagoResponse> pagos(@PathVariable Long id, Pageable pageable) {
-        return pagoService.listarPorUsuario(id, pageable);
+        return usuarios.pagos(id, pageable);
     }
 
     @GetMapping("/{id}/referidos")

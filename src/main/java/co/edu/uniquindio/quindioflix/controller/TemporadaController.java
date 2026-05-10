@@ -28,6 +28,7 @@ public class TemporadaController {
     private final TemporadaService service;
 
     @GetMapping
+    @PreAuthorize("@authorizationService.isCurrentUserActive()")
     public List<TemporadaResponse> listarPorContenido(@PathVariable Long contenidoId) {
         return service.listarPorContenido(contenidoId);
     }

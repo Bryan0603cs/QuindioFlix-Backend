@@ -26,4 +26,8 @@ public interface CalificacionRepository extends JpaRepository<CalificacionEntity
     @Modifying
     @Query("DELETE FROM CalificacionEntity c WHERE c.contenido.id = :contenidoId")
     void deleteByContenidoId(@Param("contenidoId") Long contenidoId);
+    @Modifying
+    @Query("DELETE FROM CalificacionEntity c WHERE c.perfil.id = :perfilId")
+    void deleteByPerfilId(@Param("perfilId") Long perfilId);
+
 }

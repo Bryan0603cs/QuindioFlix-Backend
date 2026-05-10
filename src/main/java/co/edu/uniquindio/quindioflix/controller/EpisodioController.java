@@ -28,6 +28,7 @@ public class EpisodioController {
     private final EpisodioService service;
 
     @GetMapping
+    @PreAuthorize("@authorizationService.isCurrentUserActive()")
     public List<EpisodioResponse> listarPorTemporada(
             @PathVariable Long contenidoId,
             @PathVariable Long temporadaId

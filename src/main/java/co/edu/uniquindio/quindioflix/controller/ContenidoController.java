@@ -51,6 +51,7 @@ public class ContenidoController {
     }
 
     @GetMapping("/{id}/relacionados")
+    @PreAuthorize("@authorizationService.isCurrentUserActive()")
     public List<ContenidoRelacionadoResponse> relacionados(@PathVariable Long id) {
         return service.relacionados(id);
     }
