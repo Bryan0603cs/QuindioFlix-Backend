@@ -136,9 +136,7 @@ END;
 -- 3.1.5 Fragmentación física por rango de fechas con tablespaces.
 -- Ejecutar este bloque con un usuario DBA o con privilegio CREATE TABLESPACE.
 -- Si tu Oracle no permite rutas relativas para DATAFILE, cambia los nombres por rutas absolutas válidas.
-CREATE TABLESPACE TS_REP_2024 DATAFILE 'ts_rep_2024.dbf' SIZE 100M AUTOEXTEND ON NEXT 20M MAXSIZE 500M;
-CREATE TABLESPACE TS_REP_2025 DATAFILE 'ts_rep_2025.dbf' SIZE 100M AUTOEXTEND ON NEXT 20M MAXSIZE 500M;
-CREATE TABLESPACE TS_REP_FUTURO DATAFILE 'ts_rep_futuro.dbf' SIZE 100M AUTOEXTEND ON NEXT 20M MAXSIZE 500M;
+
 
 -- Tabla fragmentada para evidenciar la estrategia sin destruir la tabla operacional REPRODUCCIONES.
 -- Se usa el mismo diseño lógico y se particiona por FECHA_HORA_INICIO.

@@ -2,14 +2,14 @@ spring:
   datasource:
     url: ${ORACLE_URL:jdbc:oracle:thin:@localhost:1521/FREEPDB1}
     username: ${ORACLE_USERNAME:QUINDIOFLIX_APP}
-    password: ${ORACLE_PASSWORD:Quindioflix123}
+    password: ${ORACLE_PASSWORD:QuindioFlix_2026}
     driver-class-name: oracle.jdbc.OracleDriver
+
   jpa:
-    database-platform: org.hibernate.dialect.OracleDialect
-    show-sql: false
     hibernate:
       ddl-auto: validate
+    database-platform: org.hibernate.dialect.OracleDialect
+    show-sql: true
 
-logging:
-  level:
-    org.hibernate.SQL: INFO
+  flyway:
+    enabled: ${SPRING_FLYWAY_ENABLED:false}
