@@ -1,4 +1,0 @@
-QuindioFlix Backend V10 FINAL
-Abrir esta carpeta en IntelliJ o VS Code desde la ruta donde está pom.xml.
-Ejecutar: mvn clean spring-boot:run
-Swagger: http://localhost:8080/swagger-ui/index.html

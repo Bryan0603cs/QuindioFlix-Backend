@@ -18,6 +18,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,16 +45,60 @@ public class UsuarioController {
     private final PerfilService perfiles;
 
     @GetMapping
-    @Operation(summary = "Listar usuarios", description = "Lista usuarios de forma paginada para panel administrativo con filtros opcionales.")
+    @Operation(summary = "Listar usuarios", description = "Lista usuarios de forma paginada para panel administrativo con filtros opcionales. Usa sort=id,asc o sort=nombre,desc.")
     @PreAuthorize("hasAnyRole('ADMIN','MODERADOR')")
     public Page<UsuarioResponse> listar(
-            @RequestParam(required = false) RolUsuario rol,
-            @RequestParam(required = false) EstadoCuenta estado,
+            @RequestParam(required = false) String rol,
+            @RequestParam(required = false) String estado,
             @RequestParam(required = false) Long planId,
             @RequestParam(required = false) String ciudad,
-            Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,asc") String sort
     ) {
-        return usuarios.listar(rol, estado, planId, ciudad, pageable);
+        RolUsuario rolEnum = convertirRol(rol);
+        EstadoCuenta estadoEnum = convertirEstado(estado);
+        Pageable pageable = construirPageable(page, size, sort);
+        return usuarios.listar(rolEnum, estadoEnum, planId, ciudad, pageable);
+    }
+
+    private RolUsuario convertirRol(String rol) {
+        if (rol == null || rol.isBlank()) {
+            return null;
+        }
+        return RolUsuario.valueOf(rol.trim().toUpperCase());
+    }
+
+    private EstadoCuenta convertirEstado(String estado) {
+        if (estado == null || estado.isBlank()) {
+            return null;
+        }
+        return EstadoCuenta.valueOf(estado.trim().toUpperCase());
+    }
+
+    private Pageable construirPageable(int page, int size, String sort) {
+        int pagina = Math.max(page, 0);
+        int tamano = size <= 0 || size > 50 ? 10 : size;
+
+        String limpio = sort == null ? "id,asc" : sort
+                .replace("[", "")
+                .replace("]", "")
+                .replace("\"", "")
+                .trim();
+
+        String[] partes = limpio.split(",");
+        String propiedad = partes.length > 0 ? partes[0].trim() : "id";
+
+        if (!propiedad.matches("id|nombre|email|ciudad|fechaRegistro|fechaVencimiento")) {
+            propiedad = "id";
+        }
+
+        Sort.Direction direccion = Sort.Direction.ASC;
+        if (partes.length > 1 && partes[1].trim().equalsIgnoreCase("desc")) {
+            direccion = Sort.Direction.DESC;
+        }
+
+        return PageRequest.of(pagina, tamano, Sort.by(direccion, propiedad));
     }
 
     @GetMapping("/me")

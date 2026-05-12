@@ -7,9 +7,9 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:none}
     database-platform: org.hibernate.dialect.OracleDialect
-    show-sql: true
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
 
   flyway:
     enabled: ${SPRING_FLYWAY_ENABLED:false}
